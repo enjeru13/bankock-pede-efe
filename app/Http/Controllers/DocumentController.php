@@ -307,10 +307,19 @@ class DocumentController extends Controller
         }
 
         $documents = Document::query()
-            ->with(['client:id,name,code'])
+            ->with(['client:id,name,code', 'category:id,name'])
             ->search($term)
             ->limit(10)
-            ->get(['id', 'title', 'client_id', 'category', 'created_at']);
+            ->get()
+            ->map(function ($doc) {
+                return [
+                    'id' => $doc->id,
+                    'title' => $doc->title,
+                    'client' => $doc->client,
+                    'category' => is_object($doc->category) ? $doc->category->name : (is_string($doc->category) ? $doc->category : null),
+                    'created_at' => $doc->created_at->diffForHumans(),
+                ];
+            });
 
         return response()->json($documents);
     }

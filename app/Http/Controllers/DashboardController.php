@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Client;
 use App\Models\Document;
 use Illuminate\Support\Facades\DB;
@@ -82,25 +83,18 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Distribución por categorías
-        $categoriesDistribution = Document::select('category')
-            ->whereNotNull('category')
-            ->get()
-            ->groupBy(function ($item) {
-                // Normalizar categorías: trim y lowercase para agrupar
-                return trim(strtolower($item->category));
-            })
-            ->map(function ($group) {
-                // Usar el nombre de la primera categoría encontrada para mostrar (capitalized)
-                $first = $group->first()->category;
-                return [
-                    'category' => ucfirst(trim($first)),
-                    'count' => $group->count(),
-                ];
-            })
-            ->sortByDesc('count')
+        // Distribución por categorías (usando la nueva estructura relacional)
+        $categoriesDistribution = Category::withCount('documents')
+            ->having('documents_count', '>', 0)
+            ->orderBy('documents_count', 'desc')
             ->take(5)
-            ->values();
+            ->get()
+            ->map(function ($cat) {
+                return [
+                    'category' => $cat->name,
+                    'count' => $cat->documents_count,
+                ];
+            });
 
         return Inertia::render('dashboard', [
             'stats' => $stats,
