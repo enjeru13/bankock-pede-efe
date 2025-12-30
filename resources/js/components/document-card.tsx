@@ -1,14 +1,10 @@
-import { Download, FileText, Trash2, Eye, Edit, Pencil, MoreVertical, Folder } from 'lucide-react';
+import { Download, FileText, Trash2, Eye, Edit, MoreVertical, Calendar, HardDrive } from 'lucide-react'; // Agregué Calendar y HardDrive
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { DocumentPreview } from '@/components/document-preview';
 import { EditDocumentDialog } from '@/components/edit-document-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardFooter,
-} from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
     DropdownMenu,
@@ -29,7 +25,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import clientsRoutes from '@/routes/clients';
 import documentsRoutes from '@/routes/documents';
+import { cn } from '@/lib/utils'; // Asegúrate de tener esta utilidad, o usa template literals
 
+// ... (Las interfaces Document y Props se mantienen igual)
 interface Document {
     id: number;
     title: string;
@@ -37,7 +35,7 @@ interface Document {
     filename: string;
     file_size: number;
     formatted_size: string;
-    category?: { id: number; name: string } | string; // Can be object (relation) or string (legacy column)
+    category?: { id: number; name: string } | string;
     category_id?: number;
     downloaded_count: number;
     created_at: string;
@@ -72,16 +70,11 @@ export function DocumentCard({
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-    /**
-     * Manejar descarga de documento
-     */
+    // ... (Mantén las funciones handleDownload, handleDelete, formatDate igual)
     const handleDownload = () => {
         window.location.href = documentsRoutes.download(document.id).url;
     };
 
-    /**
-     * Manejar eliminación de documento
-     */
     const handleDelete = () => {
         router.delete(documentsRoutes.destroy(document.id).url, {
             onSuccess: () => {
@@ -91,9 +84,6 @@ export function DocumentCard({
         });
     };
 
-    /**
-     * Formatear fecha
-     */
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat('es-ES', {
@@ -103,43 +93,54 @@ export function DocumentCard({
         }).format(date);
     };
 
-    // Helper to get category name safely
     const categoryName = typeof document.category === 'object' && document.category !== null
         ? document.category.name
         : document.category;
 
+    // Determinar color de icono basado en extensión (Opcional, lógica simple)
+    const isPdf = document.filename.endsWith('.pdf');
+
     return (
         <>
-            <Card className="group relative flex h-full flex-col overflow-hidden transition-all hover:shadow-md">
-                <div className="flex flex-1 flex-col p-4">
-                    {/* Header: Icon & Options */}
-                    <div className="mb-3 flex items-start justify-between">
-                        <div className="rounded-lg bg-primary/10 p-2 text-primary">
+            <Card className="group relative flex h-full flex-col overflow-hidden border-border/50 transition-all duration-300 hover:border-primary/50 hover:shadow-lg">
+                {/* Decoración superior sutil */}
+                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+
+                <CardContent className="flex flex-1 flex-col p-5">
+
+                    {/* Top Row: Icon and Actions */}
+                    <div className="flex items-start justify-between">
+                        {/* Icono de Archivo Estilizado */}
+                        <div className={cn(
+                            "flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-105",
+                            isPdf ? "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400" : "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                        )}>
                             <FileText className="h-6 w-6" />
                         </div>
 
+                        {/* Menú de Acciones */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                                <Button variant="ghost" size="icon" className="-mr-2 h-8 w-8 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
                                     <MoreVertical className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="w-48">
                                 <DropdownMenuItem onClick={() => setIsPreviewOpen(true)}>
-                                    <Eye className="mr-2 h-4 w-4" />
+                                    <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
                                     Vista Previa
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleDownload}>
-                                    <Download className="mr-2 h-4 w-4" />
+                                    <Download className="mr-2 h-4 w-4 text-muted-foreground" />
                                     Descargar
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Editar Detalles
+                                    <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
+                                    Editar
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
+                                    className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10"
                                     onClick={() => setIsDeleteOpen(true)}
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -149,51 +150,65 @@ export function DocumentCard({
                         </DropdownMenu>
                     </div>
 
-                    {/* Content: Title & Desc */}
-                    <div className="flex-1 space-y-1">
-                        <h3 className="line-clamp-2 font-medium leading-tight group-hover:text-primary">
-                            {document.title}
-                        </h3>
+                    {/* Contenido Principal */}
+                    <div className="mt-4 flex-1 space-y-2">
+                        <div>
+                            {categoryName && (
+                                <span className="mb-1 inline-block text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+                                    {categoryName}
+                                </span>
+                            )}
+                            <h3
+                                title={document.title}
+                                className="font-semibold leading-tight text-foreground transition-colors group-hover:text-primary line-clamp-2"
+                            >
+                                {document.title}
+                            </h3>
+                        </div>
+
                         {document.description && (
-                            <p className="line-clamp-2 text-xs text-muted-foreground">
+                            <p className="text-sm text-muted-foreground line-clamp-2">
                                 {document.description}
                             </p>
                         )}
                     </div>
 
-                    {/* Metadata tags */}
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        {categoryName && (
-                            <Badge variant="secondary" className="bg-secondary/50 text-[10px] font-normal hover:bg-secondary">
-                                {categoryName}
-                            </Badge>
-                        )}
-                        {showClient && (
-                            <Link href={clientsRoutes.show(document.client.id).url}>
-                                <Badge variant="outline" className="text-[10px] font-normal hover:bg-accent cursor-pointer">
+                    {/* Cliente (Badge flotante o integrado) */}
+                    {showClient && (
+                        <div className="mt-4 pt-3 border-t border-dashed">
+                            <Link href={clientsRoutes.show(document.client.id).url} className="flex items-center justify-between group/client">
+                                <span className="text-xs text-muted-foreground">Cliente:</span>
+                                <Badge variant="outline" className="font-normal transition-colors group-hover/client:border-primary group-hover/client:text-primary">
                                     {document.client.name}
                                 </Badge>
                             </Link>
-                        )}
-                    </div>
-                </div>
+                        </div>
+                    )}
+                </CardContent>
 
-                {/* Footer: Tech specs */}
-                <CardFooter className="flex items-center justify-between border-t bg-muted/30 p-3 text-[10px] text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                        <span>{document.formatted_size}</span>
-                        <span>•</span>
-                        <span>{formatDate(document.created_at)}</span>
+                {/* Footer: Detalles técnicos */}
+                <CardFooter className="bg-muted/30 px-5 py-3 text-[11px] font-medium text-muted-foreground flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(document.created_at)}
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <HardDrive className="h-3 w-3" />
+                            {document.formatted_size}
+                        </div>
                     </div>
+
                     {document.downloaded_count > 0 && (
-                        <div className="flex items-center gap-1" title={`${document.downloaded_count} descargas`}>
-                            <Download className="h-3 w-3" />
+                        <div className="flex items-center gap-1 rounded-full bg-background px-2 py-0.5 shadow-sm">
+                            <Download className="h-3 w-3 text-primary" />
                             <span>{document.downloaded_count}</span>
                         </div>
                     )}
                 </CardFooter>
             </Card>
 
+            {/* ... (Mantén los componentes DocumentPreview, EditDocumentDialog y AlertDialog igual) ... */}
             <DocumentPreview
                 document={document}
                 open={isPreviewOpen}

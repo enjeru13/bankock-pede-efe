@@ -16,7 +16,6 @@ import { dashboard } from '@/routes';
 import documentsRoutes from '@/routes/documents';
 import type { BreadcrumbItem } from '@/types';
 
-// ... (Las interfaces Document, Client, PaginatedDocuments, Category, Props se mantienen igual)
 interface Document {
     id: number;
     title: string;
@@ -120,8 +119,6 @@ export default function DocumentsIndex({
         }
     };
 
-    // Ahora solo actualizamos el estado, no recargamos la página inmediatamente
-    // para dar uso al botón "Filtrar"
     const handleCategoryChange = (value: string) => {
         setCategory(value);
     };
