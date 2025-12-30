@@ -243,16 +243,22 @@ export default function Dashboard({
                         <h2 className="text-lg font-semibold tracking-tight">Distribución por Categorías</h2>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                             {categoriesDistribution.map((item) => (
-                                <Card key={item.category} className="hover:border-primary/50 transition-colors">
-                                    <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                                        <div className="mb-3 p-3 rounded-full bg-secondary">
-                                            <FileText className="h-6 w-6 text-primary" />
-                                        </div>
-                                        <div className="text-2xl font-bold">{item.count}</div>
-                                        <div className="text-sm font-medium mt-1">{item.category}</div>
-                                        <div className="text-xs text-muted-foreground mt-1">documentos</div>
-                                    </CardContent>
-                                </Card>
+                                <Link
+                                    key={item.category}
+                                    // AQUÍ ESTÁ EL CAMBIO IMPORTANTE:
+                                    href={`/documents?category=${encodeURIComponent(item.category)}`}
+                                >
+                                    <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
+                                        <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+                                            <div className="mb-3 p-3 rounded-full bg-secondary">
+                                                <FileText className="h-6 w-6 text-primary" />
+                                            </div>
+                                            <div className="text-2xl font-bold">{item.count}</div>
+                                            <div className="text-sm font-medium mt-1">{item.category}</div>
+                                            <div className="text-xs text-muted-foreground mt-1">documentos</div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
                             ))}
                         </div>
                     </div>
@@ -260,6 +266,7 @@ export default function Dashboard({
 
                 {/* Acciones rápidas (Footer) */}
                 <div className="grid gap-4 md:grid-cols-2">
+                    {/* Botón Registrar Cliente */}
                     <Link href={clients.create().url}>
                         <div className="group relative overflow-hidden rounded-lg border bg-background p-6 hover:shadow-md transition-all hover:border-blue-500/50">
                             <div className="flex items-center gap-4">
@@ -274,7 +281,8 @@ export default function Dashboard({
                         </div>
                     </Link>
 
-                    <Link href={documents.create().url}>
+                    {/* Botón Subir Documento */}
+                    <Link href={documents.create().url}> {/* Asegúrate de usar documentsRoutes o documents según como lo importaste */}
                         <div className="group relative overflow-hidden rounded-lg border bg-background p-6 hover:shadow-md transition-all hover:border-green-500/50">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">

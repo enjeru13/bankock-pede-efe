@@ -80,9 +80,22 @@ export default function DocumentsIndex({
     categories,
     filters,
 }: Props) {
+    const getInitialCategory = () => {
+        if (!filters.category) return 'all';
+
+        // Buscamos si el filtro coincide con algún nombre de categoría
+        const initialCategoryId = categories.find(
+            (cat) => cat.name.toLowerCase() === filters.category?.toLowerCase() || String(cat.id) === filters.category
+        );
+
+        return initialCategoryId ? String(initialCategoryId.id) : filters.category;
+    };
+
     const [search, setSearch] = useState(filters.search || '');
     const [clientId, setClientId] = useState(filters.client_id || 'all');
-    const [category, setCategory] = useState(filters.category || 'all');
+    const [category, setCategory] = useState(
+        getInitialCategory()
+    );
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -101,6 +114,7 @@ export default function DocumentsIndex({
             {
                 search: newFilters.search ?? search,
                 client_id: (newFilters.client_id ?? clientId) === 'all' ? undefined : (newFilters.client_id ?? clientId),
+                // Enviamos el ID al controlador
                 category: (newFilters.category ?? category) === 'all' ? undefined : (newFilters.category ?? category),
             },
             { preserveState: true, replace: true }
