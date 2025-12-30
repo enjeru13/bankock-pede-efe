@@ -51,7 +51,7 @@ class DashboardController extends Controller
         // Documentos recientes (últimos 5)
         $recentDocuments = Document::with(['client:id,name,code', 'uploadedBy:id,name'])
             ->orderBy('created_at', 'desc')
-            ->limit(5)
+            ->limit(3)
             ->get()
             ->map(function ($doc) {
                 return [
@@ -71,7 +71,7 @@ class DashboardController extends Controller
         $topClients = Client::withCount('documents')
             ->having('documents_count', '>', 0)
             ->orderBy('documents_count', 'desc')
-            ->limit(5)
+            ->limit(3)
             ->get()
             ->map(function ($client) {
                 return [

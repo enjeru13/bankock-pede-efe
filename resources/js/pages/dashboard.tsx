@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { dashboard } from '@/routes';
 import clients from '@/routes/clients';
-import documents from '@/routes/documents';
 import type { BreadcrumbItem } from '@/types';
 
 /**
@@ -147,7 +146,7 @@ export default function Dashboard({
                                 <FileText className="h-5 w-5 text-muted-foreground" />
                                 Documentos Recientes
                             </CardTitle>
-                            <CardDescription>Últimos 5 documentos subidos</CardDescription>
+                            <CardDescription>Últimos 3 documentos subidos</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {recentDocuments.length > 0 ? (
@@ -192,7 +191,7 @@ export default function Dashboard({
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                                Top Clientes
+                                Top 3 Clientes
                             </CardTitle>
                             <CardDescription>Clientes con mayor volumen de documentos</CardDescription>
                         </CardHeader>
@@ -266,7 +265,7 @@ export default function Dashboard({
 
                 {/* Acciones rápidas (Footer) */}
                 <div className="grid gap-4 md:grid-cols-2">
-                    {/* Botón Registrar Cliente */}
+                    {/* Botón Registrar Cliente
                     <Link href={clients.create().url}>
                         <div className="group relative overflow-hidden rounded-lg border bg-background p-6 hover:shadow-md transition-all hover:border-blue-500/50">
                             <div className="flex items-center gap-4">
@@ -279,10 +278,10 @@ export default function Dashboard({
                                 </div>
                             </div>
                         </div>
-                    </Link>
+                    </Link> */}
 
-                    {/* Botón Subir Documento */}
-                    <Link href={documents.create().url}> {/* Asegúrate de usar documentsRoutes o documents según como lo importaste */}
+                    {/* Botón Subir Documento
+                    <Link href={documents.create().url}> 
                         <div className="group relative overflow-hidden rounded-lg border bg-background p-6 hover:shadow-md transition-all hover:border-green-500/50">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">
@@ -294,7 +293,7 @@ export default function Dashboard({
                                 </div>
                             </div>
                         </div>
-                    </Link>
+                    </Link> */}
                 </div>
             </div>
         </AppLayout>

@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     /**
      * Ejecutar las migraciones.
-     * 
+     *
      * Crea la tabla 'documents' para almacenar información de documentos PDF.
      * Cada documento pertenece a un cliente y fue subido por un usuario.
      */
@@ -31,8 +31,7 @@ return new class extends Migration {
                 // Si se elimina el usuario, se mantiene el registro pero se marca como NULL
                 $table->foreignId('uploaded_by')
                     ->constrained('users')
-                    ->onDelete('set null')
-                    ->nullable();
+                    ->onDelete('cascade');
 
                 // Información del documento
                 $table->string('title'); // Título descriptivo del documento
@@ -72,7 +71,7 @@ return new class extends Migration {
      */
     /**
      * Revertir las migraciones.
-     * 
+     *
      * Elimina la tabla 'documents' de la base de datos.
      */
     public function down(): void
