@@ -16,6 +16,7 @@ import { dashboard } from '@/routes';
 import documentsRoutes from '@/routes/documents';
 import type { BreadcrumbItem } from '@/types';
 
+// ... (Las interfaces Document, Client, PaginatedDocuments, Category, Props se mantienen igual)
 interface Document {
     id: number;
     title: string;
@@ -69,7 +70,6 @@ interface Props {
     categories: Category[];
     filters: {
         search?: string;
-        client_id?: string;
         category?: string;
     };
 }
@@ -82,40 +82,33 @@ export default function DocumentsIndex({
 }: Props) {
     const getInitialCategory = () => {
         if (!filters.category) return 'all';
-
-        // Buscamos si el filtro coincide con algún nombre de categoría
-        const initialCategoryId = categories.find(
+        const found = categories.find(
             (cat) => cat.name.toLowerCase() === filters.category?.toLowerCase() || String(cat.id) === filters.category
         );
-
-        return initialCategoryId ? String(initialCategoryId.id) : filters.category;
+        return found ? String(found.id) : filters.category;
     };
 
     const [search, setSearch] = useState(filters.search || '');
-    const [clientId, setClientId] = useState(filters.client_id || 'all');
-    const [category, setCategory] = useState(
-        getInitialCategory()
-    );
+    const [category, setCategory] = useState(getInitialCategory());
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Dashboard',
-            href: dashboard(),
+            href: dashboard().url,
         },
         {
             title: 'Documentos',
-            href: documentsRoutes.index(),
+            href: documentsRoutes.index().url,
         },
     ];
 
-    const updateFilters = (newFilters: { search?: string; client_id?: string; category?: string }) => {
+    // Función central para aplicar filtros
+    const applyFilters = () => {
         router.get(
-            documentsRoutes.index(),
+            documentsRoutes.index().url,
             {
-                search: newFilters.search ?? search,
-                client_id: (newFilters.client_id ?? clientId) === 'all' ? undefined : (newFilters.client_id ?? clientId),
-                // Enviamos el ID al controlador
-                category: (newFilters.category ?? category) === 'all' ? undefined : (newFilters.category ?? category),
+                search: search,
+                category: category === 'all' ? undefined : category,
             },
             { preserveState: true, replace: true }
         );
@@ -123,103 +116,79 @@ export default function DocumentsIndex({
 
     const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            updateFilters({ search });
+            applyFilters();
         }
     };
 
-    const handleClientChange = (value: string) => {
-        setClientId(value);
-        updateFilters({ client_id: value });
-    };
-
+    // Ahora solo actualizamos el estado, no recargamos la página inmediatamente
+    // para dar uso al botón "Filtrar"
     const handleCategoryChange = (value: string) => {
         setCategory(value);
-        updateFilters({ category: value });
     };
 
     const handleClearFilters = () => {
         setSearch('');
-        setClientId('all');
         setCategory('all');
-        router.get(documentsRoutes.index());
+        router.get(documentsRoutes.index().url);
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Documentos" />
 
-            <div className="flex h-full flex-col gap-4 p-4">
+            <div className="space-y-6">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">Documentos</h2>
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                             Gestiona y organiza todos los documentos
                         </p>
                     </div>
-                    <Link href={documentsRoutes.create().url}>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nuevo Documento
-                        </Button>
-                    </Link>
                 </div>
 
-                <div className="flex flex-col gap-4 rounded-lg border bg-card p-4">
-                    <div className="grid gap-4 sm:grid-cols-3">
+                {/* --- BARRA DE FILTROS ESTILO CLIENTES --- */}
+                <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 sm:flex-row">
+
+                    {/* Búsqueda (Flex-1 para ocupar el espacio disponible) */}
+                    <div className="flex-1">
                         <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
-                                type="search"
-                                placeholder="Buscar documentos..."
-                                className="pl-8"
+                                type="text"
+                                placeholder="Buscar documento, cliente o código..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 onKeyDown={handleSearchKeyDown}
+                                className="pl-9"
                             />
                         </div>
-
-                        <Select value={clientId} onValueChange={handleClientChange}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Todos los clientes" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todos los clientes</SelectItem>
-                                {clients.map((client) => (
-                                    <SelectItem key={client.id} value={String(client.id)}>
-                                        {client.code} - {client.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <Select value={category} onValueChange={handleCategoryChange}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Todas las categorías" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todas las categorías</SelectItem>
-                                {categories.map((cat) => (
-                                    <SelectItem key={cat.id} value={String(cat.id)}>
-                                        {cat.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                     </div>
 
-                    {(search || clientId !== 'all' || category !== 'all') && (
-                        <div className="flex justify-end">
-                            <Button
-                                variant="ghost"
-                                onClick={handleClearFilters}
-                                className="h-auto px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
-                            >
-                                Limpiar filtros
-                            </Button>
-                        </div>
-                    )}
+                    {/* Filtro de Categoría (Ancho fijo en desktop para alineación) */}
+                    <Select value={category} onValueChange={handleCategoryChange}>
+                        <SelectTrigger className="w-full sm:w-[200px]">
+                            <SelectValue placeholder="Categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las categorías</SelectItem>
+                            {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={String(cat.id)}>
+                                    {cat.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    {/* Botones de Acción */}
+                    <div className="flex gap-2">
+                        <Button onClick={applyFilters}>Filtrar</Button>
+                        <Button variant="outline" onClick={handleClearFilters}>
+                            Limpiar
+                        </Button>
+                    </div>
                 </div>
 
+                {/* --- RESULTADOS --- */}
                 {documents.data.length > 0 ? (
                     <>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -264,11 +233,11 @@ export default function DocumentsIndex({
                             No se encontraron documentos
                         </h3>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            {filters.search || filters.client_id || filters.category
+                            {search || category !== 'all'
                                 ? 'Intenta ajustar los filtros de búsqueda'
                                 : 'Comienza subiendo tu primer documento'}
                         </p>
-                        {!filters.search && !filters.client_id && !filters.category && (
+                        {!search && category === 'all' && (
                             <Link href={documentsRoutes.create().url} className="mt-4">
                                 <Button>
                                     <Plus className="mr-2 h-4 w-4" />

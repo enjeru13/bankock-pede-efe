@@ -38,30 +38,37 @@ class DocumentController extends Controller
     public function index(): Response
     {
         // Obtener parámetros de búsqueda y filtros
+        // NOTA: Ya no solicitamos 'client_id' porque lo eliminaste del frontend
         $search = request('search');
-        $clientId = request('client_id');
         $category = request('category');
 
         // Construir consulta con relaciones y filtros
         $documents = Document::query()
-            ->with(['client:id,name,code', 'uploadedBy:id,name', 'category:id,name']) // Cargar relaciones, incluyendo categoria
+            ->with(['client:id,name,code', 'uploadedBy:id,name', 'category:id,name'])
             ->when($search, function ($query, $search) {
-                // Aplicar búsqueda si existe
-                $query->search($search);
-            })
-            ->when($clientId, function ($query, $clientId) {
-                // Filtrar por cliente
-                $query->forClient($clientId);
+                // LÓGICA DE BÚSQUEDA GLOBAL
+                // Usamos un where group (function($q)) para que los OR no rompan otros filtros
+                $query->where(function ($q) use ($search) {
+                    // 1. Buscar en datos del documento
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('filename', 'like', "%{$search}%")
+
+                        // 2. Buscar en datos del Cliente relacionado (Nombre o Código)
+                        ->orWhereHas('client', function ($qClient) use ($search) {
+                        $qClient->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%");
+                    });
+                });
             })
             ->when($category, function ($query, $category) {
-                // Filtrar por categoría
+                // Filtrar por categoría (se mantiene igual)
                 $query->byCategory($category);
             })
-            ->orderBy('created_at', 'desc') // Más recientes primero
-            ->paginate(20) // 20 documentos por página
-            ->withQueryString(); // Mantener parámetros en paginación
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->withQueryString();
 
-        // Obtener lista de clientes para el filtro
+        // Obtener lista de clientes (Aún la necesitas si vas a mostrarlos en la UI o crear documentos)
         $clients = Client::active()
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
@@ -75,7 +82,7 @@ class DocumentController extends Controller
             'categories' => $categories,
             'filters' => [
                 'search' => $search,
-                'client_id' => $clientId,
+                // 'client_id' eliminado
                 'category' => $category,
             ],
         ]);

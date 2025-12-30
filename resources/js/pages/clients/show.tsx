@@ -1,21 +1,10 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { FileText, Mail, Phone, MapPin, Edit, Trash2, Plus } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { FileText, Mail, Phone, MapPin, Plus } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { DocumentCard } from '@/components/document-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { dashboard } from '@/routes';
 import clientsRoutes from '@/routes/clients';
 import documents from '@/routes/documents';
@@ -98,16 +87,6 @@ export default function ClientsShow({ client, stats, clients, categories }: Prop
             href: clientsRoutes.show(client.id).url,
         },
     ];
-
-    /**
-     * Manejar eliminación de cliente
-     */
-    const handleDelete = () => {
-        router.delete(clientsRoutes.destroy(client.id).url, {
-            onBefore: () => confirm('¿Estás seguro de eliminar este cliente?'),
-        });
-    };
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             {/* ... (Header/Info/Stats - mostly unchanged save for types) */}
@@ -130,44 +109,6 @@ export default function ClientsShow({ client, stats, clients, categories }: Prop
                                 {client.code}
                             </Badge>
                         </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                        <Link href={clientsRoutes.edit(client.id).url}>
-                            <Button variant="outline">
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                            </Button>
-                        </Link>
-
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                        ¿Eliminar cliente?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Esta acción eliminará el cliente "{client.name}".
-                                        Solo se puede eliminar si no tiene documentos asociados.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction
-                                        onClick={handleDelete}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                        Eliminar
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
                     </div>
                 </div>
 

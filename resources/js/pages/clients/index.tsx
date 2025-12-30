@@ -123,12 +123,6 @@ export default function ClientsIndex({ clients, filters }: Props) {
                             Gestiona los clientes y sus documentos
                         </p>
                     </div>
-                    <Link href={clientsRoutes.create().url}>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nuevo Cliente
-                        </Button>
-                    </Link>
                 </div>
 
                 {/* Filtros */}
