@@ -1,12 +1,12 @@
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
 } from '@/components/ui/dialog';
 import documents from '@/routes/documents';
-import { Button } from '@/components/ui/button';
 import { Download, ExternalLink } from 'lucide-react';
 
 interface Document {
@@ -15,7 +15,7 @@ interface Document {
     filename: string;
     description?: string;
     client: {
-        id: number;
+        id: number | string; // Can be number or string (from co_cli)
         name: string;
         code: string;
     };
@@ -27,7 +27,11 @@ interface DocumentPreviewProps {
     onOpenChange: (open: boolean) => void;
 }
 
-export function DocumentPreview({ document, open, onOpenChange }: DocumentPreviewProps) {
+export function DocumentPreview({
+    document,
+    open,
+    onOpenChange,
+}: DocumentPreviewProps) {
     if (!document) return null;
 
     // Obtener URLs usando los helpers de rutas (si están disponibles) o construirlas manualmente
@@ -37,20 +41,28 @@ export function DocumentPreview({ document, open, onOpenChange }: DocumentPrevie
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
-                <DialogHeader className="p-4 border-b">
-                    <div className="flex items-center justify-between mr-8">
+            <DialogContent className="flex h-[85vh] max-w-4xl flex-col gap-0 p-0">
+                <DialogHeader className="border-b p-4">
+                    <div className="mr-8 flex items-center justify-between">
                         <div>
-                            <DialogTitle className="line-clamp-1">{document.title}</DialogTitle>
+                            <DialogTitle className="line-clamp-1">
+                                {document.title}
+                            </DialogTitle>
                             <DialogDescription className="mt-1 flex items-center gap-2">
                                 <span>{document.filename}</span>
                                 <span>•</span>
-                                <span className="font-medium text-foreground">{document.client.name}</span>
+                                <span className="font-medium text-foreground">
+                                    {document.client.name}
+                                </span>
                             </DialogDescription>
                         </div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" asChild>
-                                <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                                <a
+                                    href={previewUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     <ExternalLink className="mr-2 h-4 w-4" />
                                     Abrir
                                 </a>
@@ -65,10 +77,10 @@ export function DocumentPreview({ document, open, onOpenChange }: DocumentPrevie
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 bg-muted/20 w-full h-full p-4 overflow-hidden">
+                <div className="h-full w-full flex-1 overflow-hidden bg-muted/20 p-4">
                     <iframe
                         src={previewUrl}
-                        className="w-full h-full rounded-md border bg-background"
+                        className="h-full w-full rounded-md border bg-background"
                         title={document.title}
                     />
                 </div>

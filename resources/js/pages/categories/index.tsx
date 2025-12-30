@@ -1,26 +1,3 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import { Pencil, Trash2, Folder, Search, Plus } from 'lucide-react';
-import { useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -31,10 +8,39 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import categoriesRoutes from '@/routes/categories';
 import type { BreadcrumbItem } from '@/types';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Folder, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 interface Category {
     id: number;
@@ -49,8 +55,12 @@ interface Props {
 export default function CategoriesIndex({ categories }: Props) {
     const [search, setSearch] = useState('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-    const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+    const [editingCategory, setEditingCategory] = useState<Category | null>(
+        null,
+    );
+    const [deletingCategory, setDeletingCategory] = useState<Category | null>(
+        null,
+    );
 
     // Formulario para crear
     const {
@@ -59,7 +69,7 @@ export default function CategoriesIndex({ categories }: Props) {
         post: postCreate,
         processing: processingCreate,
         reset: resetCreate,
-        errors: errorsCreate
+        errors: errorsCreate,
     } = useForm({
         name: '',
     });
@@ -68,10 +78,10 @@ export default function CategoriesIndex({ categories }: Props) {
     const {
         data: editData,
         setData: setEditData,
-        post: postEdit,
+        put: putEdit,
         processing: processingEdit,
         reset: resetEdit,
-        errors: errorsEdit
+        errors: errorsEdit,
     } = useForm({
         id: '' as string | number,
         name: '',
@@ -90,7 +100,7 @@ export default function CategoriesIndex({ categories }: Props) {
 
     // Filtrar categorías
     const filteredCategories = categories.filter((cat) =>
-        cat.name.toLowerCase().includes(search.toLowerCase())
+        cat.name.toLowerCase().includes(search.toLowerCase()),
     );
 
     // Manejadores Crear
@@ -115,7 +125,7 @@ export default function CategoriesIndex({ categories }: Props) {
 
     const handleUpdate = (e: React.FormEvent) => {
         e.preventDefault();
-        postEdit(categoriesRoutes.update().url, {
+        putEdit(categoriesRoutes.update().url, {
             onSuccess: () => {
                 setEditingCategory(null);
                 resetEdit();
@@ -127,11 +137,15 @@ export default function CategoriesIndex({ categories }: Props) {
     const handleDelete = () => {
         if (!deletingCategory) return;
 
-        router.post(categoriesRoutes.destroy().url, {
-            id: deletingCategory.id,
-        }, {
-            onSuccess: () => setDeletingCategory(null),
-        });
+        router.post(
+            categoriesRoutes.destroy().url,
+            {
+                id: deletingCategory.id,
+            },
+            {
+                onSuccess: () => setDeletingCategory(null),
+            },
+        );
     };
 
     return (
@@ -155,8 +169,8 @@ export default function CategoriesIndex({ categories }: Props) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <div className="relative max-w-sm flex-1">
+                        <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Buscar categoría..."
                             value={search}
@@ -170,7 +184,8 @@ export default function CategoriesIndex({ categories }: Props) {
                     <CardHeader>
                         <CardTitle>Categorías Existentes</CardTitle>
                         <CardDescription>
-                            Lista de todas las categorías utilizadas en los documentos.
+                            Lista de todas las categorías utilizadas en los
+                            documentos.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -178,8 +193,12 @@ export default function CategoriesIndex({ categories }: Props) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Nombre</TableHead>
-                                    <TableHead className="text-right">Documentos</TableHead>
-                                    <TableHead className="text-right">Acciones</TableHead>
+                                    <TableHead className="text-right">
+                                        Documentos
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        Acciones
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -200,7 +219,9 @@ export default function CategoriesIndex({ categories }: Props) {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        onClick={() => handleEditClick(cat)}
+                                                        onClick={() =>
+                                                            handleEditClick(cat)
+                                                        }
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>
@@ -208,7 +229,11 @@ export default function CategoriesIndex({ categories }: Props) {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="text-destructive hover:text-destructive"
-                                                        onClick={() => setDeletingCategory(cat)}
+                                                        onClick={() =>
+                                                            setDeletingCategory(
+                                                                cat,
+                                                            )
+                                                        }
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -218,7 +243,10 @@ export default function CategoriesIndex({ categories }: Props) {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={3} className="h-24 text-center">
+                                        <TableCell
+                                            colSpan={3}
+                                            className="h-24 text-center"
+                                        >
                                             No se encontraron categorías.
                                         </TableCell>
                                     </TableRow>
@@ -229,17 +257,21 @@ export default function CategoriesIndex({ categories }: Props) {
                 </Card>
 
                 {/* Diálogo Crear */}
-                <Dialog open={isCreateOpen} onOpenChange={(open) => {
-                    if (!open) {
-                        setIsCreateOpen(false);
-                        resetCreate();
-                    }
-                }}>
+                <Dialog
+                    open={isCreateOpen}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setIsCreateOpen(false);
+                            resetCreate();
+                        }
+                    }}
+                >
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Nueva Categoría</DialogTitle>
                             <DialogDescription>
-                                Crea una nueva categoría para organizar documentos.
+                                Crea una nueva categoría para organizar
+                                documentos.
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleCreate} className="space-y-4">
@@ -248,18 +280,29 @@ export default function CategoriesIndex({ categories }: Props) {
                                 <Input
                                     id="create-name"
                                     value={createData.name}
-                                    onChange={(e) => setCreateData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setCreateData('name', e.target.value)
+                                    }
                                     placeholder="Ej: Facturas, Contratos..."
                                 />
                                 {errorsCreate.name && (
-                                    <p className="text-sm text-destructive">{errorsCreate.name}</p>
+                                    <p className="text-sm text-destructive">
+                                        {errorsCreate.name}
+                                    </p>
                                 )}
                             </div>
                             <DialogFooter>
-                                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setIsCreateOpen(false)}
+                                >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={processingCreate}>
+                                <Button
+                                    type="submit"
+                                    disabled={processingCreate}
+                                >
                                     Crear Categoría
                                 </Button>
                             </DialogFooter>
@@ -268,12 +311,16 @@ export default function CategoriesIndex({ categories }: Props) {
                 </Dialog>
 
                 {/* Diálogo Editar */}
-                <Dialog open={!!editingCategory} onOpenChange={(open) => !open && setEditingCategory(null)}>
+                <Dialog
+                    open={!!editingCategory}
+                    onOpenChange={(open) => !open && setEditingCategory(null)}
+                >
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Renombrar Categoría</DialogTitle>
                             <DialogDescription>
-                                Esto actualizará todos los documentos que usan esta categoría.
+                                Esto actualizará todos los documentos que usan
+                                esta categoría.
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleUpdate} className="space-y-4">
@@ -282,15 +329,23 @@ export default function CategoriesIndex({ categories }: Props) {
                                 <Input
                                     id="edit-name"
                                     value={editData.name}
-                                    onChange={(e) => setEditData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setEditData('name', e.target.value)
+                                    }
                                     placeholder="Nombre de la categoría"
                                 />
                                 {errorsEdit.name && (
-                                    <p className="text-sm text-destructive">{errorsEdit.name}</p>
+                                    <p className="text-sm text-destructive">
+                                        {errorsEdit.name}
+                                    </p>
                                 )}
                             </div>
                             <DialogFooter>
-                                <Button type="button" variant="outline" onClick={() => setEditingCategory(null)}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setEditingCategory(null)}
+                                >
                                     Cancelar
                                 </Button>
                                 <Button type="submit" disabled={processingEdit}>
@@ -302,13 +357,20 @@ export default function CategoriesIndex({ categories }: Props) {
                 </Dialog>
 
                 {/* Diálogo Eliminar */}
-                <AlertDialog open={!!deletingCategory} onOpenChange={(open) => !open && setDeletingCategory(null)}>
+                <AlertDialog
+                    open={!!deletingCategory}
+                    onOpenChange={(open) => !open && setDeletingCategory(null)}
+                >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>¿Eliminar categoría?</AlertDialogTitle>
+                            <AlertDialogTitle>
+                                ¿Eliminar categoría?
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                                Los documentos asociados a "{deletingCategory?.name}" quedarán sin categoría.
-                                Esta acción no elimina los documentos.
+                                Los documentos asociados a "
+                                {deletingCategory?.name}" quedarán sin
+                                categoría. Esta acción no elimina los
+                                documentos.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

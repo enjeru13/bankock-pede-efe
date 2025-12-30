@@ -1,4 +1,4 @@
-import { Download, FileText, Trash2, Eye, Edit, MoreVertical, Calendar, HardDrive } from 'lucide-react'; // Agregué Calendar y HardDrive
+import { Download, FileText, Trash2, Eye, Edit, MoreVertical, Calendar, HardDrive } from 'lucide-react';
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { DocumentPreview } from '@/components/document-preview';
@@ -25,9 +25,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import clientsRoutes from '@/routes/clients';
 import documentsRoutes from '@/routes/documents';
-import { cn } from '@/lib/utils'; // Asegúrate de tener esta utilidad, o usa template literals
+import { cn } from '@/lib/utils';
 
-// ... (Las interfaces Document y Props se mantienen igual)
 interface Document {
     id: number;
     title: string;
@@ -39,9 +38,9 @@ interface Document {
     category_id?: number;
     downloaded_count: number;
     created_at: string;
-    client_id: number;
+    client_id: number | string;
     client: {
-        id: number;
+        id: number | string;
         name: string;
         code: string;
     };
@@ -55,7 +54,7 @@ interface DocumentCardProps {
     document: Document;
     showClient?: boolean;
     onDelete?: () => void;
-    clients?: { id: number; name: string; code: string }[];
+    clients?: { id: number | string; name: string; code: string }[];
     categories?: { id: number; name: string }[];
 }
 
@@ -70,7 +69,6 @@ export function DocumentCard({
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-    // ... (Mantén las funciones handleDownload, handleDelete, formatDate igual)
     const handleDownload = () => {
         window.location.href = documentsRoutes.download(document.id).url;
     };
@@ -97,7 +95,6 @@ export function DocumentCard({
         ? document.category.name
         : document.category;
 
-    // Determinar color de icono basado en extensión (Opcional, lógica simple)
     const isPdf = document.filename.endsWith('.pdf');
 
     return (
@@ -176,7 +173,7 @@ export function DocumentCard({
                     {/* Cliente (Badge flotante o integrado) */}
                     {showClient && (
                         <div className="mt-4 pt-3 border-t border-dashed">
-                            <Link href={clientsRoutes.show(document.client.id).url} className="flex items-center justify-between group/client">
+                            <Link href={clientsRoutes.show(String(document.client.id)).url} className="flex items-center justify-between group/client">
                                 <span className="text-xs text-muted-foreground">Cliente:</span>
                                 <Badge variant="outline" className="font-normal transition-colors group-hover/client:border-primary group-hover/client:text-primary">
                                     {document.client.name}
@@ -208,7 +205,6 @@ export function DocumentCard({
                 </CardFooter>
             </Card>
 
-            {/* ... (Mantén los componentes DocumentPreview, EditDocumentDialog y AlertDialog igual) ... */}
             <DocumentPreview
                 document={document}
                 open={isPreviewOpen}

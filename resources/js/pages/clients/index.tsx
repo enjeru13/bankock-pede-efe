@@ -1,7 +1,3 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Search } from 'lucide-react';
-import { useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
 import { ClientCard } from '@/components/client-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,30 +8,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import clientsRoutes from '@/routes/clients';
 import type { BreadcrumbItem } from '@/types';
-
-/**
- * Página: Lista de Clientes
- * 
- * Muestra todos los clientes del sistema con:
- * - Búsqueda por nombre o código
- * - Filtro por estado (activo/inactivo)
- * - Paginación
- * - Botón para crear nuevo cliente
- */
-
-interface Client {
-    id: number;
-    name: string;
-    code: string;
-    email?: string;
-    phone?: string;
-    is_active: boolean;
-    documents_count: number;
-    formatted_total_size?: string;
-}
+import type { Client } from '@/types/client';
+import { Head, router } from '@inertiajs/react';
+import { Search } from 'lucide-react';
+import { useState } from 'react';
 
 interface PaginatedClients {
     data: Client[];
@@ -86,7 +66,7 @@ export default function ClientsIndex({ clients, filters }: Props) {
             {
                 preserveState: true,
                 preserveScroll: true,
-            }
+            },
         );
     };
 
@@ -130,7 +110,7 @@ export default function ClientsIndex({ clients, filters }: Props) {
                     {/* Búsqueda */}
                     <div className="flex-1">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 type="text"
                                 placeholder="Buscar por nombre o código..."
@@ -168,7 +148,10 @@ export default function ClientsIndex({ clients, filters }: Props) {
                     <>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {clients.data.map((client) => (
-                                <ClientCard key={client.id} client={client} />
+                                <ClientCard
+                                    key={client.co_cli}
+                                    client={client}
+                                />
                             ))}
                         </div>
 
@@ -178,7 +161,9 @@ export default function ClientsIndex({ clients, filters }: Props) {
                                 {clients.links.map((link, index) => (
                                     <Button
                                         key={index}
-                                        variant={link.active ? 'default' : 'outline'}
+                                        variant={
+                                            link.active ? 'default' : 'outline'
+                                        }
                                         size="sm"
                                         disabled={!link.url}
                                         onClick={() => {
@@ -207,14 +192,17 @@ export default function ClientsIndex({ clients, filters }: Props) {
                                 ? 'Intenta ajustar los filtros de búsqueda'
                                 : 'Comienza creando tu primer cliente'}
                         </p>
-                        {!filters.search && !filters.status && (
-                            <Link href={clientsRoutes.create().url} className="mt-4">
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Crear Cliente
-                                </Button>
-                            </Link>
-                        )}
+                        {/* {!filters.search && !filters.status && (
+                            // <Link
+                            //     href={clientsRoutes.create().url}
+                            //     className="mt-4"
+                            // >
+                            //     <Button>
+                            //         <Plus className="mr-2 h-4 w-4" />
+                            //         Crear Cliente
+                            //     </Button>
+                            // </Link>
+                        )} */}
                     </div>
                 )}
             </div>

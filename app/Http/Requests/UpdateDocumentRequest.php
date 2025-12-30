@@ -25,6 +25,12 @@ class UpdateDocumentRequest extends FormRequest
     {
         return [
 
+            // Título
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+            ],
             // Descripción
             'description' => [
                 'nullable',

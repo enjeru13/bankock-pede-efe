@@ -1,7 +1,3 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Search } from 'lucide-react';
-import { useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
 import { DocumentCard } from '@/components/document-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,9 +8,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import documentsRoutes from '@/routes/documents';
 import type { BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
+import { Plus, Search } from 'lucide-react';
+import { useState } from 'react';
 
 interface Document {
     id: number;
@@ -27,11 +27,10 @@ interface Document {
     category_id?: number;
     downloaded_count: number;
     created_at: string;
-    client_id: number;
+    client_id: string; // Changed to string
     client: {
-        id: number;
-        name: string;
-        code: string;
+        co_cli: string;
+        cli_des: string;
     };
     uploaded_by?: {
         id: number;
@@ -40,9 +39,8 @@ interface Document {
 }
 
 interface Client {
-    id: number;
-    name: string;
-    code: string;
+    co_cli: string;
+    cli_des: string;
 }
 
 interface PaginatedDocuments {
@@ -82,7 +80,9 @@ export default function DocumentsIndex({
     const getInitialCategory = () => {
         if (!filters.category) return 'all';
         const found = categories.find(
-            (cat) => cat.name.toLowerCase() === filters.category?.toLowerCase() || String(cat.id) === filters.category
+            (cat) =>
+                cat.name.toLowerCase() === filters.category?.toLowerCase() ||
+                String(cat.id) === filters.category,
         );
         return found ? String(found.id) : filters.category;
     };
@@ -109,7 +109,7 @@ export default function DocumentsIndex({
                 search: search,
                 category: category === 'all' ? undefined : category,
             },
-            { preserveState: true, replace: true }
+            { preserveState: true, replace: true },
         );
     };
 
@@ -129,6 +129,13 @@ export default function DocumentsIndex({
         router.get(documentsRoutes.index().url);
     };
 
+    // Transform clients for DocumentCard
+    const mappedClients = clients.map((c) => ({
+        id: c.co_cli,
+        name: c.cli_des,
+        code: c.co_cli,
+    }));
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Documentos" />
@@ -136,8 +143,10 @@ export default function DocumentsIndex({
             <div className="space-y-6">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Documentos</h2>
-                        <p className="text-muted-foreground text-sm">
+                        <h2 className="text-2xl font-bold tracking-tight">
+                            Documentos
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
                             Gestiona y organiza todos los documentos
                         </p>
                     </div>
@@ -145,11 +154,10 @@ export default function DocumentsIndex({
 
                 {/* --- BARRA DE FILTROS ESTILO CLIENTES --- */}
                 <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 sm:flex-row">
-
                     {/* Búsqueda (Flex-1 para ocupar el espacio disponible) */}
                     <div className="flex-1">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 type="text"
                                 placeholder="Buscar documento, cliente o código..."
@@ -162,12 +170,17 @@ export default function DocumentsIndex({
                     </div>
 
                     {/* Filtro de Categoría (Ancho fijo en desktop para alineación) */}
-                    <Select value={category} onValueChange={handleCategoryChange}>
+                    <Select
+                        value={category}
+                        onValueChange={handleCategoryChange}
+                    >
                         <SelectTrigger className="w-full sm:w-[200px]">
                             <SelectValue placeholder="Categoría" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todas las categorías</SelectItem>
+                            <SelectItem value="all">
+                                Todas las categorías
+                            </SelectItem>
                             {categories.map((cat) => (
                                 <SelectItem key={cat.id} value={String(cat.id)}>
                                     {cat.name}
@@ -192,9 +205,17 @@ export default function DocumentsIndex({
                             {documents.data.map((document) => (
                                 <DocumentCard
                                     key={document.id}
-                                    document={document}
+                                    document={{
+                                        ...document,
+                                        client_id: document.client.co_cli,
+                                        client: {
+                                            id: document.client.co_cli,
+                                            name: document.client.cli_des,
+                                            code: document.client.co_cli,
+                                        },
+                                    }}
                                     showClient={true}
-                                    clients={clients}
+                                    clients={mappedClients}
                                     categories={categories}
                                 />
                             ))}
@@ -205,7 +226,9 @@ export default function DocumentsIndex({
                                 {documents.links.map((link, index) => (
                                     <Button
                                         key={index}
-                                        variant={link.active ? 'default' : 'outline'}
+                                        variant={
+                                            link.active ? 'default' : 'outline'
+                                        }
                                         size="sm"
                                         disabled={!link.url}
                                         onClick={() => {
@@ -235,7 +258,10 @@ export default function DocumentsIndex({
                                 : 'Comienza subiendo tu primer documento'}
                         </p>
                         {!search && category === 'all' && (
-                            <Link href={documentsRoutes.create().url} className="mt-4">
+                            <Link
+                                href={documentsRoutes.create().url}
+                                className="mt-4"
+                            >
                                 <Button>
                                     <Plus className="mr-2 h-4 w-4" />
                                     Subir Documento

@@ -30,13 +30,6 @@ class StoreDocumentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Cliente al que pertenece el documento (obligatorio)
-            'client_id' => [
-                'required',
-                'integer',
-                'exists:clients,id', // Debe existir en la tabla clients
-            ],
-
             // Título del documento (obligatorio)
             'title' => [
                 'required',
@@ -86,8 +79,7 @@ class StoreDocumentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'client_id.required' => 'Debe seleccionar un cliente.',
-            'client_id.exists' => 'El cliente seleccionado no existe.',
+
 
             'title.required' => 'El título del documento es obligatorio.',
             'title.max' => 'El título no puede tener más de 255 caracteres.',
@@ -115,7 +107,7 @@ class StoreDocumentRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'client_id' => 'cliente',
+
             'title' => 'título',
             'description' => 'descripción',
             'category' => 'categoría',

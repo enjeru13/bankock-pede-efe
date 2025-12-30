@@ -1,11 +1,15 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
 import { FileUploader } from '@/components/file-uploader';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -13,18 +17,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import InputError from '@/components/input-error';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import documentsRoutes from '@/routes/documents';
 import type { BreadcrumbItem } from '@/types';
+import { Head, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
 /**
  * Página: Subir Documento
- * 
+ *
  * Formulario para subir un nuevo documento PDF.
  * Incluye:
- * - Selector de cliente
+ * - Selector de cliente (Usa campos legacy: co_cli, cli_des)
  * - Título y descripción
  * - Categoría
  * - Etiquetas
@@ -32,9 +38,10 @@ import type { BreadcrumbItem } from '@/types';
  */
 
 interface Client {
-    id: number;
-    name: string;
-    code: string;
+    co_cli: string;
+    cli_des: string;
+    co_seg?: string;
+    co_ven?: string;
 }
 
 interface Category {
@@ -43,11 +50,11 @@ interface Category {
 }
 
 interface Props {
-    clients: Client[];
+    client: Client;
     categories: Category[];
 }
 
-export default function DocumentsCreate({ clients, categories }: Props) {
+export default function DocumentsCreate({ client, categories }: Props) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [tagInput, setTagInput] = useState('');
     const [isCustomCategory, setIsCustomCategory] = useState(false);
@@ -55,20 +62,20 @@ export default function DocumentsCreate({ clients, categories }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Dashboard',
-            href: dashboard(),
+            href: dashboard().url,
         },
         {
             title: 'Documentos',
-            href: documentsRoutes.index(),
+            href: documentsRoutes.index().url,
         },
         {
             title: 'Subir Documento',
-            href: documentsRoutes.create().url,
+            href: documentsRoutes.create(client.co_cli).url,
         },
     ];
 
     const { data, setData, post, processing, errors } = useForm({
-        client_id: '',
+        client_id: client.co_cli,
         title: '',
         description: '',
         category: '',
@@ -85,17 +92,20 @@ export default function DocumentsCreate({ clients, categories }: Props) {
     };
 
     const handleRemoveTag = (tagToRemove: string) => {
-        setData('tags', data.tags.filter((tag) => tag !== tagToRemove));
+        setData(
+            'tags',
+            data.tags.filter((tag) => tag !== tagToRemove),
+        );
     };
 
-    const handleFileSelect = (file: File) => {
+    const handleFileSelect = (file: File | null) => {
         setSelectedFile(file);
         setData('file', file);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(documentsRoutes.store(), {
+        post(documentsRoutes.store(client.co_cli).url, {
             forceFormData: true,
         });
     };
@@ -106,7 +116,9 @@ export default function DocumentsCreate({ clients, categories }: Props) {
 
             <div className="mx-auto max-w-2xl space-y-6">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Subir Documento</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">
+                        Subir Documento
+                    </h2>
                     <p className="text-muted-foreground">
                         Sube un nuevo documento PDF al sistema
                     </p>
@@ -125,36 +137,52 @@ export default function DocumentsCreate({ clients, categories }: Props) {
                             {/* Selector de cliente */}
                             <div className="space-y-2">
                                 <Label htmlFor="client_id">
-                                    Cliente <span className="text-destructive">*</span>
+                                    Cliente{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
-                                <Select
+                                <Input
+                                    id="client_id"
+                                    type="text"
+                                    value={client.cli_des}
+                                    readOnly
+                                />
+                                {/* <Select
                                     value={data.client_id}
-                                    onValueChange={(value) => setData('client_id', value)}
+                                    onValueChange={(value) =>
+                                        setData('client_id', value)
+                                    }
                                 >
                                     <SelectTrigger id="client_id">
                                         <SelectValue placeholder="Selecciona un cliente" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {clients.map((client) => (
-                                            <SelectItem key={client.id} value={client.id.toString()}>
-                                                {client.code} - {client.name}
+                                            <SelectItem
+                                                key={client.co_cli}
+                                                value={client.co_cli}
+                                            >
+                                                {client.co_cli} -{' '}
+                                                {client.cli_des}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <InputError message={errors.client_id} />
+                                <InputError message={errors.client_id} /> */}
                             </div>
 
                             {/* Título */}
                             <div className="space-y-2">
                                 <Label htmlFor="title">
-                                    Título <span className="text-destructive">*</span>
+                                    Título{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                     id="title"
                                     type="text"
                                     value={data.title}
-                                    onChange={(e) => setData('title', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('title', e.target.value)
+                                    }
                                     placeholder="Ej: Factura Enero 2024"
                                 />
                                 <InputError message={errors.title} />
@@ -166,7 +194,9 @@ export default function DocumentsCreate({ clients, categories }: Props) {
                                 <Textarea
                                     id="description"
                                     value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('description', e.target.value)
+                                    }
                                     placeholder="Descripción opcional del documento..."
                                     rows={3}
                                 />
@@ -183,7 +213,9 @@ export default function DocumentsCreate({ clients, categories }: Props) {
                                         size="sm"
                                         className="h-auto p-0 text-xs"
                                         onClick={() => {
-                                            setIsCustomCategory(!isCustomCategory);
+                                            setIsCustomCategory(
+                                                !isCustomCategory,
+                                            );
                                             setData('category', ''); // Reset on toggle
                                         }}
                                     >
@@ -197,21 +229,30 @@ export default function DocumentsCreate({ clients, categories }: Props) {
                                     <Input
                                         id="category"
                                         value={data.category}
-                                        onChange={(e) => setData('category', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('category', e.target.value)
+                                        }
                                         placeholder="Nueva categoría..."
                                     />
                                 ) : (
                                     <Select
                                         value={data.category}
-                                        onValueChange={(value) => setData('category', value)}
+                                        onValueChange={(value) =>
+                                            setData('category', value)
+                                        }
                                     >
                                         <SelectTrigger id="category">
                                             <SelectValue placeholder="Selecciona una categoría" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="null_option_empty">Sin categoría</SelectItem>
+                                            <SelectItem value="null_option_empty">
+                                                Sin categoría
+                                            </SelectItem>
                                             {categories.map((cat) => (
-                                                <SelectItem key={cat.id} value={String(cat.id)}>
+                                                <SelectItem
+                                                    key={cat.id}
+                                                    value={String(cat.id)}
+                                                >
                                                     {cat.name}
                                                 </SelectItem>
                                             ))}
@@ -229,7 +270,9 @@ export default function DocumentsCreate({ clients, categories }: Props) {
                                         id="tags"
                                         type="text"
                                         value={tagInput}
-                                        onChange={(e) => setTagInput(e.target.value)}
+                                        onChange={(e) =>
+                                            setTagInput(e.target.value)
+                                        }
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
@@ -256,7 +299,9 @@ export default function DocumentsCreate({ clients, categories }: Props) {
                                                 {tag}
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleRemoveTag(tag)}
+                                                    onClick={() =>
+                                                        handleRemoveTag(tag)
+                                                    }
                                                     className="hover:text-destructive"
                                                 >
                                                     ×
@@ -271,7 +316,8 @@ export default function DocumentsCreate({ clients, categories }: Props) {
                             {/* Upload de archivo */}
                             <div className="space-y-2">
                                 <Label>
-                                    Archivo PDF <span className="text-destructive">*</span>
+                                    Archivo PDF{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <FileUploader
                                     onFileSelect={handleFileSelect}
@@ -283,13 +329,18 @@ export default function DocumentsCreate({ clients, categories }: Props) {
 
                     {/* Botones de acción */}
                     <div className="mt-6 flex gap-4">
-                        <Button type="submit" disabled={processing || !selectedFile}>
+                        <Button
+                            type="submit"
+                            disabled={processing || !selectedFile}
+                        >
                             {processing ? 'Subiendo...' : 'Subir Documento'}
                         </Button>
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => router.visit(documentsRoutes.index())}
+                            onClick={() =>
+                                router.visit(documentsRoutes.index().url)
+                            }
                         >
                             Cancelar
                         </Button>

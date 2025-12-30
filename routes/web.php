@@ -44,16 +44,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     | Gestión de Clientes
     |--------------------------------------------------------------------------
-    | CRUD completo para clientes:
-    | - index: Listar clientes
-    | - create: Formulario crear cliente
-    | - store: Guardar nuevo cliente
-    | - show: Ver cliente y sus documentos
-    | - edit: Formulario editar cliente
-    | - update: Actualizar cliente
-    | - destroy: Eliminar cliente
     */
-    Route::resource('clients', ClientController::class);
+    Route::get('clients', [ClientController::class, 'index'])
+        ->name('clients.index');
+    Route::get('clients/{client}', [ClientController::class, 'show'])
+        ->name('clients.show');
 
     /*
     |--------------------------------------------------------------------------
@@ -66,11 +61,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('documents.index');
 
     // Formulario para subir documento
-    Route::get('documents/create', [DocumentController::class, 'create'])
+    Route::get('documents/{client}/create', [DocumentController::class, 'create'])
         ->name('documents.create');
 
     // Guardar nuevo documento
-    Route::post('documents', [DocumentController::class, 'store'])
+    Route::post('documents/{client}', [DocumentController::class, 'store'])
         ->name('documents.store');
 
     // Actualizar documento
@@ -92,10 +87,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Gestión de categorías
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
-    Route::put('categories/update', [CategoryController::class, 'update'])->name('categories.update'); // Keeping generic update path or changing to standard REST
-    // Actually, let's use standard REST-ish but keeping it simple for the modal
-    // Route::put('categories/{category}', ...) is better but the frontend sends an ID in payload.
-    // Let's stick to what I wrote: store, update, destroy
+    Route::put('categories/update', [CategoryController::class, 'update'])->name('categories.update');
     Route::post('categories/destroy', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
     // Eliminar documento

@@ -1,19 +1,25 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import InputError from '@/components/input-error';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import clients from '@/routes/clients';
 import type { BreadcrumbItem } from '@/types';
+import { Head, router, useForm } from '@inertiajs/react';
 
 /**
  * Página: Crear Cliente
- * 
+ *
  * Formulario para crear un nuevo cliente.
  * Incluye:
  * - Nombre y código
@@ -84,13 +90,16 @@ export default function ClientsCreate() {
                             {/* Nombre */}
                             <div className="space-y-2">
                                 <Label htmlFor="name">
-                                    Nombre <span className="text-destructive">*</span>
+                                    Nombre{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                     id="name"
                                     type="text"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     placeholder="Ej: Empresa ABC S.A."
                                 />
                                 <InputError message={errors.name} />
@@ -99,14 +108,18 @@ export default function ClientsCreate() {
                             {/* Código */}
                             <div className="space-y-2">
                                 <Label htmlFor="code">
-                                    Código <span className="text-destructive">*</span>
+                                    Código{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                     id="code"
                                     type="text"
                                     value={data.code}
                                     onChange={(e) =>
-                                        setData('code', e.target.value.toUpperCase())
+                                        setData(
+                                            'code',
+                                            e.target.value.toUpperCase(),
+                                        )
                                     }
                                     placeholder="Ej: CLI-001"
                                     className="font-mono"
@@ -124,7 +137,9 @@ export default function ClientsCreate() {
                                     id="email"
                                     type="email"
                                     value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('email', e.target.value)
+                                    }
                                     placeholder="contacto@empresa.com"
                                 />
                                 <InputError message={errors.email} />
@@ -137,7 +152,9 @@ export default function ClientsCreate() {
                                     id="phone"
                                     type="tel"
                                     value={data.phone}
-                                    onChange={(e) => setData('phone', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('phone', e.target.value)
+                                    }
                                     placeholder="+58 412-1234567"
                                 />
                                 <InputError message={errors.phone} />
@@ -149,7 +166,9 @@ export default function ClientsCreate() {
                                 <Textarea
                                     id="address"
                                     value={data.address}
-                                    onChange={(e) => setData('address', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('address', e.target.value)
+                                    }
                                     placeholder="Dirección completa del cliente..."
                                     rows={2}
                                 />
@@ -162,12 +181,15 @@ export default function ClientsCreate() {
                                 <Textarea
                                     id="notes"
                                     value={data.notes}
-                                    onChange={(e) => setData('notes', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('notes', e.target.value)
+                                    }
                                     placeholder="Notas internas sobre el cliente..."
                                     rows={3}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Estas notas solo son visibles para el equipo interno
+                                    Estas notas solo son visibles para el equipo
+                                    interno
                                 </p>
                                 <InputError message={errors.notes} />
                             </div>
@@ -175,9 +197,12 @@ export default function ClientsCreate() {
                             {/* Estado activo */}
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div className="space-y-0.5">
-                                    <Label htmlFor="is_active">Cliente Activo</Label>
+                                    <Label htmlFor="is_active">
+                                        Cliente Activo
+                                    </Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Los clientes inactivos no aparecen en los filtros por defecto
+                                        Los clientes inactivos no aparecen en
+                                        los filtros por defecto
                                     </p>
                                 </div>
                                 <Switch

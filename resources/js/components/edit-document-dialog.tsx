@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -8,10 +7,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -19,14 +16,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Plus, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import documentsRoutes from '@/routes/documents';
-
-interface Client {
-    id: number;
-    name: string;
-    code: string;
-}
+import { useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 interface Document {
     id: number;
@@ -34,9 +27,9 @@ interface Document {
     description?: string;
     category?: { id: number; name: string } | string;
     category_id?: number;
-    client_id: number;
+    client_id: number | string; // Can be number or string (from co_cli)
     client: {
-        id: number;
+        id: number | string; // Can be number or string (from co_cli)
         name: string;
         code: string;
     };
@@ -46,7 +39,6 @@ interface EditDocumentDialogProps {
     document: Document;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    clients?: Client[];
     categories?: { id: number; name: string }[];
 }
 
@@ -54,23 +46,28 @@ export function EditDocumentDialog({
     document,
     open,
     onOpenChange,
-    clients = [],
     categories = [],
 }: EditDocumentDialogProps) {
     // Helper to extract category name safely
     const getCategoryName = () => {
-        if (typeof document.category === 'object' && document.category !== null) {
+        if (
+            typeof document.category === 'object' &&
+            document.category !== null
+        ) {
             return document.category.name;
         }
         return document.category || '';
     };
 
-    const { data, setData, put, processing, errors, reset, clearErrors } = useForm({
-        client_id: document.client_id,
-        title: document.title,
-        description: document.description || '',
-        category: document.category_id ? String(document.category_id) : getCategoryName(),
-    });
+    const { data, setData, put, transform, processing, errors, clearErrors } =
+        useForm({
+            client_id: document.client_id,
+            title: document.title,
+            description: document.description || '',
+            category: document.category_id
+                ? String(document.category_id)
+                : getCategoryName() || 'null_option_empty',
+        });
 
     const [isCustomCategory, setIsCustomCategory] = useState(false);
 
@@ -80,17 +77,20 @@ export function EditDocumentDialog({
             const hasId = !!document.category_id;
 
             // Helper logic inline since we are inside useEffect
-            const catName = typeof document.category === 'object' && document.category !== null
-                ? document.category.name
-                : (document.category || '');
+            const catName =
+                typeof document.category === 'object' &&
+                document.category !== null
+                    ? document.category.name
+                    : document.category || '';
 
             setIsCustomCategory(!hasId && !!catName); // Only custom if no ID but has text
 
             setData({
-                client_id: document.client_id,
                 title: document.title,
                 description: document.description || '',
-                category: document.category_id ? String(document.category_id) : catName,
+                category: document.category_id
+                    ? String(document.category_id)
+                    : catName || 'null_option_empty',
             });
             clearErrors();
         }
@@ -98,6 +98,13 @@ export function EditDocumentDialog({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        transform((data) => ({
+            ...data,
+            category:
+                data.category === 'null_option_empty' ? '' : data.category,
+        }));
+
         put(documentsRoutes.update(document.id).url, {
             onSuccess: () => onOpenChange(false),
         });
@@ -114,29 +121,35 @@ export function EditDocumentDialog({
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Cliente */}
+                    {/* Cliente
                     <div className="space-y-2">
                         <Label htmlFor="client_id">Cliente</Label>
                         <Select
                             value={String(data.client_id)}
-                            onValueChange={(value) => setData('client_id', Number(value))}
+                            onValueChange={(value) =>
+                                setData('client_id', Number(value))
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccionar cliente" />
                             </SelectTrigger>
                             <SelectContent>
                                 {clients.map((client) => (
-                                    <SelectItem key={client.id} value={String(client.id)}>
+                                    <SelectItem
+                                        key={client.id}
+                                        value={String(client.id)}
+                                    >
                                         [{client.code}] {client.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                         {errors.client_id && (
-                            <p className="text-sm text-destructive">{errors.client_id}</p>
+                            <p className="text-sm text-destructive">
+                                {errors.client_id}
+                            </p>
                         )}
-                    </div>
-
+                    </div> */}
                     {/* Título */}
                     <div className="space-y-2">
                         <Label htmlFor="title">Título</Label>
@@ -147,24 +160,28 @@ export function EditDocumentDialog({
                             placeholder="Título del documento"
                         />
                         {errors.title && (
-                            <p className="text-sm text-destructive">{errors.title}</p>
+                            <p className="text-sm text-destructive">
+                                {errors.title}
+                            </p>
                         )}
                     </div>
-
                     {/* Descripción */}
                     <div className="space-y-2">
                         <Label htmlFor="description">Descripción</Label>
                         <Textarea
                             id="description"
                             value={data.description}
-                            onChange={(e) => setData('description', e.target.value)}
+                            onChange={(e) =>
+                                setData('description', e.target.value)
+                            }
                             placeholder="Descripción opcional..."
                         />
                         {errors.description && (
-                            <p className="text-sm text-destructive">{errors.description}</p>
+                            <p className="text-sm text-destructive">
+                                {errors.description}
+                            </p>
                         )}
                     </div>
-
                     {/* Categoría */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -189,21 +206,30 @@ export function EditDocumentDialog({
                             <Input
                                 id="category"
                                 value={data.category}
-                                onChange={(e) => setData('category', e.target.value)}
+                                onChange={(e) =>
+                                    setData('category', e.target.value)
+                                }
                                 placeholder="Nueva categoría..."
                             />
                         ) : (
                             <Select
                                 value={data.category}
-                                onValueChange={(value) => setData('category', value)}
+                                onValueChange={(value) =>
+                                    setData('category', value)
+                                }
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccionar categoría" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="null_option_empty">Sin Categoría</SelectItem>
+                                    <SelectItem value="null_option_empty">
+                                        Sin Categoría
+                                    </SelectItem>
                                     {categories.map((cat) => (
-                                        <SelectItem key={cat.id} value={String(cat.id)}>
+                                        <SelectItem
+                                            key={cat.id}
+                                            value={String(cat.id)}
+                                        >
                                             {cat.name}
                                         </SelectItem>
                                     ))}
@@ -211,10 +237,11 @@ export function EditDocumentDialog({
                             </Select>
                         )}
                         {errors.category && (
-                            <p className="text-sm text-destructive">{errors.category}</p>
+                            <p className="text-sm text-destructive">
+                                {errors.category}
+                            </p>
                         )}
                     </div>
-
                     <DialogFooter>
                         <Button
                             type="button"

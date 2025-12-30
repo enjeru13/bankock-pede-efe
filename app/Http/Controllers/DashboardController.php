@@ -9,28 +9,10 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/**
- * Controlador del Dashboard
- * 
- * Muestra estadísticas generales del sistema de gestión de documentos.
- */
 class DashboardController extends Controller
 {
-    /**
-     * Mostrar el dashboard con estadísticas.
-     * 
-     * Incluye:
-     * - Total de clientes y documentos
-     * - Espacio de almacenamiento utilizado
-     * - Documentos recientes
-     * - Clientes más activos
-     * - Distribución por categorías
-     *
-     * @return Response
-     */
     public function index(): Response
     {
-        // Estadísticas generales
         $stats = [
             // Total de clientes activos
             'total_clients' => Client::active()->count(),
@@ -49,7 +31,7 @@ class DashboardController extends Controller
         ];
 
         // Documentos recientes (últimos 5)
-        $recentDocuments = Document::with(['client:id,name,code', 'uploadedBy:id,name'])
+        $recentDocuments = Document::with(['client:co_cli', 'uploadedBy:id,name'])
             ->orderBy('created_at', 'desc')
             ->limit(3)
             ->get()
@@ -60,28 +42,43 @@ class DashboardController extends Controller
                     'formatted_size' => $doc->formatted_size,
                     'created_at' => $doc->created_at->diffForHumans(),
                     'client' => [
-                        'id' => $doc->client->id,
-                        'name' => $doc->client->name,
-                        'code' => $doc->client->code,
+                        'id' => $doc->client_id, // For routing
+                        'code' => $doc->client_id, // Legacy code
+                        'name' => $doc->client ? $doc->client->cli_des : 'Desconocido',
                     ],
                 ];
             });
 
-        // Clientes más activos (top 5 por cantidad de documentos)
-        $topClients = Client::withCount('documents')
-            ->having('documents_count', '>', 0)
-            ->orderBy('documents_count', 'desc')
+        $topClientStats = Document::select('client_id')
+            ->selectRaw('count(*) as count')
+            ->selectRaw('sum(file_size) as total_size')
+            ->whereNull('deleted_at')
+            ->groupBy('client_id')
+            ->orderByDesc('count')
             ->limit(3)
-            ->get()
-            ->map(function ($client) {
-                return [
-                    'id' => $client->id,
-                    'name' => $client->name,
-                    'code' => $client->code,
-                    'documents_count' => $client->documents_count,
-                    'formatted_total_size' => $client->formatted_total_size,
-                ];
-            });
+            ->get();
+
+        // 2. Fetch Client details from SQL Server
+        $clientIds = $topClientStats->pluck('client_id')->toArray();
+        $clients = Client::whereIn('co_cli', $clientIds)
+            ->get(['co_cli', 'cli_des'])
+            ->keyBy('co_cli');
+
+        // 3. Merge data
+        $topClients = $topClientStats->map(function ($stat) use ($clients) {
+            $client = $clients->get($stat->client_id);
+            
+            // Skip if client doesn't exist in legacy DB (orphan documents)
+            if (!$client) return null;
+
+            return [
+                'id' => $client->co_cli,
+                'code' => $client->co_cli,
+                'name' => $client->cli_des,
+                'documents_count' => $stat->count,
+                'formatted_total_size' => $this->formatBytes($stat->total_size),
+            ];
+        })->filter()->values();
 
         // Distribución por categorías (usando la nueva estructura relacional)
         $categoriesDistribution = Category::withCount('documents')
@@ -104,13 +101,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    /**
-     * Formatear bytes a una unidad legible.
-     *
-     * @param int $bytes
-     * @param int $precision
-     * @return string
-     */
     private function formatBytes(int $bytes, int $precision = 2): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
