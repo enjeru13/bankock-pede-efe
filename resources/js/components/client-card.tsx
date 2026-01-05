@@ -28,24 +28,42 @@ export function ClientCard({ client }: ClientCardProps) {
                             <Building2 className="h-5 w-5" />
                         </div>
 
-                        {/* Indicador de Estado */}
-                        <div
-                            className={cn(
-                                'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium',
-                                isActive == 0
-                                    ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900/30 dark:bg-green-900/20 dark:text-green-400'
-                                    : 'border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400',
-                            )}
-                        >
-                            <span
+                        {/* Indicadores de Estado */}
+                        <div className="flex flex-col items-end gap-1.5">
+                            {/* Estado Activo/Inactivo */}
+                            <div
                                 className={cn(
-                                    'h-1.5 w-1.5 rounded-full',
+                                    'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium',
                                     isActive == 0
-                                        ? 'bg-green-500'
-                                        : 'bg-zinc-400',
+                                        ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900/30 dark:bg-green-900/20 dark:text-green-400'
+                                        : 'border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400',
                                 )}
-                            />
-                            {isActive == 0 ? 'Activo' : 'Inactivo'}
+                            >
+                                <span
+                                    className={cn(
+                                        'h-1.5 w-1.5 rounded-full',
+                                        isActive == 0
+                                            ? 'bg-green-500'
+                                            : 'bg-zinc-400',
+                                    )}
+                                />
+                                {isActive == 0 ? 'Activo' : 'Inactivo'}
+                            </div>
+
+                            {/* Estado de Documentos */}
+                            <div
+                                className={cn(
+                                    'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium',
+                                    client.documents_count && client.documents_count > 0
+                                        ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400'
+                                        : 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-400',
+                                )}
+                            >
+                                <FileText className="h-3 w-3" />
+                                {client.documents_count && client.documents_count > 0
+                                    ? 'Con archivos'
+                                    : 'Sin archivos'}
+                            </div>
                         </div>
                     </div>
 

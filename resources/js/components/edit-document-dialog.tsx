@@ -27,9 +27,9 @@ interface Document {
     description?: string;
     category?: { id: number; name: string } | string;
     category_id?: number;
-    client_id: number | string; // Can be number or string (from co_cli)
+    client_id: number | string;
     client: {
-        id: number | string; // Can be number or string (from co_cli)
+        id: number | string;
         name: string;
         code: string;
     };
@@ -79,7 +79,7 @@ export function EditDocumentDialog({
             // Helper logic inline since we are inside useEffect
             const catName =
                 typeof document.category === 'object' &&
-                document.category !== null
+                    document.category !== null
                     ? document.category.name
                     : document.category || '';
 
@@ -193,7 +193,7 @@ export function EditDocumentDialog({
                                 className="h-auto p-0 text-xs"
                                 onClick={() => {
                                     setIsCustomCategory(!isCustomCategory);
-                                    setData('category', ''); // Reset on toggle
+                                    setData('category', '');
                                 }}
                             >
                                 {isCustomCategory

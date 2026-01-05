@@ -101,7 +101,7 @@ export function DocumentCard({
         <>
             <Card className="group relative flex h-full flex-col overflow-hidden border-border/50 transition-all duration-300 hover:border-primary/50 hover:shadow-lg">
                 {/* Decoración superior sutil */}
-                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-red-500/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
                 <CardContent className="flex flex-1 flex-col p-5">
 
@@ -231,7 +231,7 @@ export function DocumentCard({
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDelete}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="bg-destructive text-white hover:bg-red-500"
                         >
                             Eliminar
                         </AlertDialogAction>
