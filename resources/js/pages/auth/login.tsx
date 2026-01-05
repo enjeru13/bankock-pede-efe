@@ -33,21 +33,19 @@ export default function Login({ status, canRegister }: LoginProps) {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="co_ven">
-                                    Código de Vendedor
-                                </Label>
+                                <Label htmlFor="name">Usuario / Zona</Label>
                                 <Input
-                                    id="co_ven"
+                                    id="name"
                                     type="text"
-                                    name="co_ven"
+                                    name="name"
                                     required
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="username"
-                                    placeholder="Ingrese su código"
+                                    placeholder="Ingrese su usuario o zona"
                                     className="h-11 shadow-sm"
                                 />
-                                <InputError message={errors.co_ven as string} />
+                                <InputError message={errors.name} />
                             </div>
 
                             <div className="grid gap-2">

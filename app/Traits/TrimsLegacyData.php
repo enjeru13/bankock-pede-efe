@@ -21,7 +21,10 @@ trait TrimsLegacyData
             if (is_string($value)) {
                 
                 $cleanValue = trim($value);
-                $cleanValue = mb_convert_encoding($cleanValue, 'UTF-8', 'Windows-1252');
+                
+                if (!mb_check_encoding($cleanValue, 'UTF-8')) {
+                    $cleanValue = mb_convert_encoding($cleanValue, 'UTF-8', 'Windows-1252');
+                }
 
                 $this->attributes[$key] = $cleanValue;
             }

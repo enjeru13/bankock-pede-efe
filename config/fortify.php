@@ -45,7 +45,7 @@ return [
     |
     */
 
-    'username' => 'co_ven',
+    'username' => 'name',
 
     'email' => 'email',
 
