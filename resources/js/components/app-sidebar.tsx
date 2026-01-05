@@ -14,7 +14,12 @@ import categoriesRoutes from '@/routes/categories';
 import clientsRoutes from '@/routes/clients';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
+<<<<<<< Updated upstream
 import { Folder, LayoutGrid, Users } from 'lucide-react';
+=======
+import { LayoutGrid, Users, FileText, Folder } from 'lucide-react';
+import AppLogo from './app-logo';
+>>>>>>> Stashed changes
 
 export function AppSidebar() {
     const mainNavItems: NavItem[] = [
@@ -46,8 +51,8 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard().url} prefetch>
-                                <h1 className="text-2xl font-bold">Bancock</h1>
+                            <Link href={dashboard()} prefetch>
+                                <AppLogo />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
