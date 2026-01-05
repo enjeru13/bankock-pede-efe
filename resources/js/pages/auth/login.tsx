@@ -16,10 +16,7 @@ interface LoginProps {
     canRegister: boolean;
 }
 
-export default function Login({
-    status,
-    canRegister,
-}: LoginProps) {
+export default function Login({ status, canRegister }: LoginProps) {
     return (
         <AuthLayout
             title="Bienvenido de nuevo"
@@ -36,25 +33,26 @@ export default function Login({
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Correo electrónico</Label>
+                                <Label htmlFor="co_ven">
+                                    Código de Vendedor
+                                </Label>
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
+                                    id="co_ven"
+                                    type="text"
+                                    name="co_ven"
                                     required
                                     autoFocus
                                     tabIndex={1}
-                                    autoComplete="email"
-                                    placeholder="correo@ejemplo.com"
+                                    autoComplete="username"
+                                    placeholder="Ingrese su código"
                                     className="h-11 shadow-sm"
                                 />
-                                <InputError message={errors.email} />
+                                <InputError message={errors.co_ven as string} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
                                     <Label htmlFor="password">Contraseña</Label>
-
                                 </div>
                                 <Input
                                     id="password"
@@ -75,12 +73,17 @@ export default function Login({
                                     name="remember"
                                     tabIndex={3}
                                 />
-                                <Label htmlFor="remember" className="text-sm font-medium">Recordarme</Label>
+                                <Label
+                                    htmlFor="remember"
+                                    className="text-sm font-medium"
+                                >
+                                    Recordarme
+                                </Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full h-11 text-base font-semibold transition-all hover:shadow-lg active:scale-[0.98]"
+                                className="mt-4 h-11 w-full text-base font-semibold transition-all hover:shadow-lg active:scale-[0.98]"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -91,9 +94,13 @@ export default function Login({
                         </div>
 
                         {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground font-medium">
+                            <div className="text-center text-sm font-medium text-muted-foreground">
                                 ¿No tienes una cuenta?{' '}
-                                <TextLink href={register()} tabIndex={5} className="text-indigo-600 hover:text-indigo-500 font-bold">
+                                <TextLink
+                                    href={register()}
+                                    tabIndex={5}
+                                    className="font-bold text-indigo-600 hover:text-indigo-500"
+                                >
                                     Regístrate aquí
                                 </TextLink>
                             </div>

@@ -27,38 +27,44 @@ export default function Register() {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Nombre completo</Label>
+                                <Label htmlFor="co_ven">
+                                    Código de Vendedor
+                                </Label>
                                 <Input
-                                    id="name"
+                                    id="co_ven"
                                     type="text"
                                     required
                                     autoFocus
                                     tabIndex={1}
-                                    autoComplete="name"
-                                    name="name"
-                                    placeholder="Tu nombre"
+                                    autoComplete="username"
+                                    name="co_ven"
+                                    placeholder="Código de vendedor"
                                     className="h-11 shadow-sm"
                                 />
                                 <InputError
-                                    message={errors.name}
+                                    message={errors.co_ven as string}
                                     className="mt-2"
                                 />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Correo electrónico</Label>
+                            {/* <div className="grid gap-2">
+                                <Label htmlFor="ven_des">
+                                    Nombre / Descripción
+                                </Label>
                                 <Input
-                                    id="email"
-                                    type="email"
+                                    id="ven_des"
+                                    type="text"
                                     required
                                     tabIndex={2}
-                                    autoComplete="email"
-                                    name="email"
-                                    placeholder="correo@ejemplo.com"
+                                    autoComplete="name"
+                                    name="ven_des"
+                                    placeholder="Nombre del vendedor"
                                     className="h-11 shadow-sm"
                                 />
-                                <InputError message={errors.email} />
-                            </div>
+                                <InputError
+                                    message={errors.ven_des as string}
+                                />
+                            </div> */}
 
                             <div className="grid gap-2">
                                 <Label htmlFor="password">Contraseña</Label>
@@ -96,7 +102,7 @@ export default function Register() {
 
                             <Button
                                 type="submit"
-                                className="mt-2 w-full h-11 text-base font-semibold transition-all hover:shadow-lg active:scale-[0.98]"
+                                className="mt-2 h-11 w-full text-base font-semibold transition-all hover:shadow-lg active:scale-[0.98]"
                                 tabIndex={5}
                                 data-test="register-user-button"
                             >
@@ -105,9 +111,13 @@ export default function Register() {
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground font-medium">
+                        <div className="text-center text-sm font-medium text-muted-foreground">
                             ¿Ya tienes una cuenta?{' '}
-                            <TextLink href={login()} tabIndex={6} className="text-indigo-600 hover:text-indigo-500 font-bold">
+                            <TextLink
+                                href={login()}
+                                tabIndex={6}
+                                className="font-bold text-indigo-600 hover:text-indigo-500"
+                            >
                                 Inicia sesión
                             </TextLink>
                         </div>

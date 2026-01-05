@@ -10,6 +10,7 @@ use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
@@ -29,6 +30,20 @@ class ClientController extends Controller
         } elseif ($status === 'inactive') {
             $query->where('inactivo', 1);
         }
+
+        // Filter by vendor's segments
+        $userCode = auth()->user()->co_ven;
+        
+        $allowedSegments = DB::connection('sqlsrv')
+            ->table('vendedor as v')
+            ->join('clientes as c', 'v.co_ven', '=', 'c.co_ven')
+            ->join('segmento as s', 'c.co_seg', '=', 's.co_seg')
+            ->where('v.co_ven', $userCode)
+            ->where('s.co_seg', '<>', '99999')
+            ->distinct()
+            ->pluck('s.co_seg');
+
+        $query->whereIn('co_seg', $allowedSegments);
 
         $clients = $query->paginate(15)
             ->withQueryString();

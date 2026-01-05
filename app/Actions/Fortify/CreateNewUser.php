@@ -3,36 +3,34 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules;
 
-    /**
-     * Validate and create a newly registered user.
-     *
-     * @param  array<string, string>  $input
-     */
     public function create(array $input): User
     {
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique(User::class),
-            ],
+            'co_ven' => ['required', 'string', 'max:255', Rule::unique(User::class)],
             'password' => $this->passwordRules(),
         ])->validate();
 
+        $vendedor = DB::connection('sqlsrv')->select("SELECT TOP 1 ven_des FROM vendedor WHERE CO_VEN = '{$input['co_ven']}' AND tipo = 'A'");
+
+        if (empty($vendedor)) {
+            throw ValidationException::withMessages([
+                'co_ven' => ['El código de vendedor no existe.'],
+            ]);
+        }
+
         return User::create([
-            'name' => $input['name'],
-            'email' => $input['email'],
+            'co_ven' => $input['co_ven'],
+            'name' => $vendedor[0]->ven_des,
             'password' => $input['password'],
         ]);
     }

@@ -10,12 +10,11 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import clientsRoutes from '@/routes/clients';
-import documentsRoutes from '@/routes/documents';
 import categoriesRoutes from '@/routes/categories';
+import clientsRoutes from '@/routes/clients';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Users, FileText, Folder } from 'lucide-react';
+import { Folder, LayoutGrid, Users } from 'lucide-react';
 
 export function AppSidebar() {
     const mainNavItems: NavItem[] = [
@@ -29,11 +28,11 @@ export function AppSidebar() {
             href: clientsRoutes.index().url,
             icon: Users,
         },
-        {
-            title: 'Documentos',
-            href: documentsRoutes.index().url,
-            icon: FileText,
-        },
+        // {
+        //     title: 'Documentos',
+        //     href: documentsRoutes.index().url,
+        //     icon: FileText,
+        // },
         {
             title: 'Categorías',
             href: categoriesRoutes.index().url,
