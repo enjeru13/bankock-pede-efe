@@ -12,7 +12,6 @@ interface ClientCardProps {
 
 export function ClientCard({ client }: ClientCardProps) {
     const isActive = client.inactivo;
-    console.log(client);
     return (
         <Link
             href={clientsRoutes.show(client.co_cli).url}

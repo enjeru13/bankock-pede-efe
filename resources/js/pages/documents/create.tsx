@@ -22,7 +22,7 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import documentsRoutes from '@/routes/documents';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 /**
@@ -338,9 +338,7 @@ export default function DocumentsCreate({ client, categories }: Props) {
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() =>
-                                router.visit(documentsRoutes.index().url)
-                            }
+                            onClick={() => window.history.back()}
                         >
                             Cancelar
                         </Button>
