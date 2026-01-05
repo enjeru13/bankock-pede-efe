@@ -14,12 +14,8 @@ import categoriesRoutes from '@/routes/categories';
 import clientsRoutes from '@/routes/clients';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-<<<<<<< Updated upstream
 import { Folder, LayoutGrid, Users } from 'lucide-react';
-=======
-import { LayoutGrid, Users, FileText, Folder } from 'lucide-react';
 import AppLogo from './app-logo';
->>>>>>> Stashed changes
 
 export function AppSidebar() {
     const mainNavItems: NavItem[] = [
