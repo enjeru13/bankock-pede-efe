@@ -1,5 +1,5 @@
 import { Download, FileText, Trash2, Eye, Edit, MoreVertical, Calendar, HardDrive } from 'lucide-react';
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { DocumentPreview } from '@/components/document-preview';
 import { EditDocumentDialog } from '@/components/edit-document-dialog';
@@ -26,6 +26,7 @@ import {
 import clientsRoutes from '@/routes/clients';
 import documentsRoutes from '@/routes/documents';
 import { cn } from '@/lib/utils';
+import { SharedData } from '@/types';
 
 interface Document {
     id: number;
@@ -68,6 +69,8 @@ export function DocumentCard({
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const { auth } = usePage<SharedData>().props;
+    const isAdmin = auth.user?.is_admin ?? false;
 
     const handleDownload = () => {
         window.location.href = documentsRoutes.download(document.id).url;
@@ -131,18 +134,26 @@ export function DocumentCard({
                                     <Download className="mr-2 h-4 w-4 text-muted-foreground" />
                                     Descargar
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
-                                    <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
-                                    Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10"
-                                    onClick={() => setIsDeleteOpen(true)}
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                </DropdownMenuItem>
+
+                                {isAdmin && (
+                                    <>
+                                        <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                                            <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
+                                            Editar
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuSeparator />
+
+                                        <DropdownMenuItem
+                                            className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10"
+                                            onClick={() => setIsDeleteOpen(true)}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Eliminar
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -210,34 +221,37 @@ export function DocumentCard({
                 open={isPreviewOpen}
                 onOpenChange={setIsPreviewOpen}
             />
+            {isAdmin && (
+                <>
+                    <EditDocumentDialog
+                        document={document}
+                        open={isEditOpen}
+                        onOpenChange={setIsEditOpen}
+                        clients={clients}
+                        categories={categories}
+                    />
 
-            <EditDocumentDialog
-                document={document}
-                open={isEditOpen}
-                onOpenChange={setIsEditOpen}
-                clients={clients}
-                categories={categories}
-            />
-
-            <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Eliminar documento?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta acción eliminará permanentemente el documento "{document.title}".
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleDelete}
-                            className="bg-destructive text-white hover:bg-red-500"
-                        >
-                            Eliminar
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                    <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>¿Eliminar documento?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Esta acción eliminará permanentemente el documento "{document.title}".
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={handleDelete}
+                                    className="bg-destructive text-white hover:bg-red-500"
+                                >
+                                    Eliminar
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </>
+            )}
         </>
     );
 }

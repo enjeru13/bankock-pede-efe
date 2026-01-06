@@ -36,6 +36,8 @@ export interface User {
     co_ven: string;
     avatar?: string;
     email_verified_at: string | null;
+    zone: string;
+    is_admin: boolean;
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;
