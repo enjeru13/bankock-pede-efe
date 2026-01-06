@@ -1,13 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Http\Requests\StoreClientRequest;
-use App\Http\Requests\UpdateClientRequest;
 use App\Models\Client;
 use App\Models\Document;
 use App\Models\Category;
-use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,7 +14,6 @@ class ClientController extends Controller
     {
         $search = request('search');
         $status = request('status');
-
         $query = Client::select('co_cli', 'cli_des', 'co_seg', 'co_ven', 'direc1', 'telefonos', 'rif', 'inactivo');
 
         if ($search) {
@@ -31,16 +26,20 @@ class ClientController extends Controller
             $query->where('inactivo', 1);
         }
 
-        // Filter by vendor's segments
-        // Filter by vendor's segments or user's zone using the scope
         $query->accessibleBy(auth()->user());
 
-        $clients = $query->paginate(15)
-            ->withQueryString();
+        $clients = $query->paginate(15)->withQueryString();
 
-        foreach ($clients as $client) {
-            $client->documents_count = $client->documents()->count();
-        }
+        $clientIds = $clients->pluck('co_cli')->toArray();
+
+        $documentCounts = Document::whereIn('client_id', $clientIds)
+            ->selectRaw('client_id, count(*) as count')
+            ->groupBy('client_id')
+            ->pluck('count', 'client_id');
+        $clients->getCollection()->transform(function ($client) use ($documentCounts) {
+            $client->documents_count = $documentCounts->get($client->co_cli, 0);
+            return $client;
+        });
 
         return Inertia::render('clients/index', [
             'clients' => $clients,

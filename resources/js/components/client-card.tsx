@@ -12,6 +12,7 @@ interface ClientCardProps {
 
 export function ClientCard({ client }: ClientCardProps) {
     const isActive = client.inactivo;
+    const hasDocuments = (client.documents_count || 0) > 0;
     return (
         <Link
             href={clientsRoutes.show(client.co_cli).url}
@@ -54,15 +55,13 @@ export function ClientCard({ client }: ClientCardProps) {
                             <div
                                 className={cn(
                                     'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium',
-                                    client.documents_count && client.documents_count > 0
-                                        ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400'
-                                        : 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-400',
+                                    hasDocuments // Usas la variable simple aquí
+                                        ? 'border-blue-200 bg-blue-50 text-blue-700 ...'
+                                        : 'border-amber-200 bg-amber-50 text-amber-700 ...'
                                 )}
                             >
                                 <FileText className="h-3 w-3" />
-                                {client.documents_count && client.documents_count > 0
-                                    ? 'Con archivos'
-                                    : 'Sin archivos'}
+                                {hasDocuments ? 'Con archivos' : 'Sin archivos'}
                             </div>
                         </div>
                     </div>

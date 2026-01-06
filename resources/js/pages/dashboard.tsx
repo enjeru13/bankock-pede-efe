@@ -9,46 +9,32 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
-import clientsRoutes from '@/routes/clients'; // Asegúrate de importar esto correctamente
+import clientsRoutes from '@/routes/clients';
 import type { BreadcrumbItem, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
-    Activity,
-    Building2,
-    Download,
+    AlertCircle,
+    ArrowRight,
     FileText,
     HardDrive,
-    TrendingUp,
     Users,
 } from 'lucide-react';
 
-// ... (Las interfaces se mantienen igual)
+// --- INTERFACES ---
+
 interface Stats {
     total_clients: number;
     total_documents: number;
     total_storage: number;
     formatted_storage: string;
-    total_downloads: number;
+    total_missing_docs: number; // El total real calculado en backend
 }
 
-interface RecentDocument {
-    id: number;
-    title: string;
-    formatted_size: string;
-    created_at: string;
-    client: {
-        id: string;
-        name: string;
-        code: string;
-    };
-}
-
-interface TopClient {
+interface ClientWithoutDocs {
     id: string;
     name: string;
     code: string;
-    documents_count: number;
-    formatted_total_size: string;
+    created_at: string;
 }
 
 interface CategoryDistribution {
@@ -58,9 +44,8 @@ interface CategoryDistribution {
 
 interface Props {
     stats: Stats;
-    recentDocuments: RecentDocument[];
-    topClients: TopClient[];
     categoriesDistribution: CategoryDistribution[];
+    clientsWithoutDocuments: ClientWithoutDocs[]; // La lista limitada (visual)
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -72,9 +57,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Dashboard({
     stats,
-    recentDocuments,
-    topClients,
     categoriesDistribution,
+    clientsWithoutDocuments,
 }: Props) {
     const { auth } = usePage<SharedData>().props;
 
@@ -83,7 +67,7 @@ export default function Dashboard({
             <Head title="Dashboard" />
 
             <div className="space-y-8">
-                {/* Header Section */}
+                {/* --- HEADER --- */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -115,139 +99,68 @@ export default function Dashboard({
                         icon={HardDrive}
                         color="orange"
                     />
+                    {/* Tarjeta corregida: Usa stats.total_missing_docs para el número real */}
                     <StatsCard
-                        title="Descargas"
-                        value={stats.total_downloads}
-                        desc="Total histórico"
-                        icon={Download}
+                        title="Clientes Pendientes"
+                        value={stats.total_missing_docs}
+                        desc="Sin archivos subidos"
+                        icon={AlertCircle}
                         color="purple"
                     />
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-7">
-                    {/* --- DOCUMENTOS RECIENTES (Ocupa 4 columnas) --- */}
-                    <Card className="col-span-1 h-full shadow-sm md:col-span-4">
+                {/* --- SECCIÓN: LISTA DE CLIENTES SIN DOCUMENTOS --- */}
+                <div className="grid gap-6">
+                    <Card className="shadow-sm border-amber-200 dark:border-amber-900/50">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Activity className="h-5 w-5 text-muted-foreground" />
-                                Actividad Reciente
+                            <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-500">
+                                <AlertCircle className="h-5 w-5" />
+                                Clientes sin Archivos Subidos
                             </CardTitle>
                             <CardDescription>
-                                Últimos documentos incorporados al sistema
+                                {/* Lógica dinámica para el texto descriptivo */}
+                                {stats.total_missing_docs > clientsWithoutDocuments.length
+                                    ? `Mostrando ${clientsWithoutDocuments.length} de ${stats.total_missing_docs} clientes que requieren atención`
+                                    : 'Listado completo de clientes pendientes'}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {recentDocuments.length > 0 ? (
-                                <div className="space-y-0 divide-y">
-                                    {recentDocuments.map((doc) => (
+                            {clientsWithoutDocuments.length > 0 ? (
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {clientsWithoutDocuments.map((client) => (
                                         <div
-                                            key={doc.id}
-                                            className="group -mx-2 flex items-center justify-between rounded-md px-2 py-4 transition-colors first:pt-0 last:pb-0 hover:bg-muted/30"
+                                            key={client.id}
+                                            className="group flex items-center justify-between rounded-lg border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-sm"
                                         >
-                                            <div className="flex min-w-0 items-center gap-4">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400">
-                                                    <FileText className="h-5 w-5" />
-                                                </div>
-                                                <div className="min-w-0 space-y-1">
-                                                    <Link
-                                                        href={
-                                                            clientsRoutes.show(
-                                                                doc.client.id,
-                                                            ).url
-                                                        }
-                                                        className="block truncate leading-none font-medium transition-colors hover:text-primary"
-                                                    >
-                                                        {doc.title}
-                                                    </Link>
-                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                        <span className="font-medium text-foreground">
-                                                            {doc.client.name}
-                                                        </span>
-                                                        <span>•</span>
-                                                        <span>
-                                                            {doc.formatted_size}
-                                                        </span>
-                                                    </div>
+                                            <div className="space-y-1 overflow-hidden">
+                                                <Link
+                                                    href={clientsRoutes.show(client.id).url}
+                                                    className="block truncate font-medium hover:underline hover:text-primary"
+                                                    title={client.name}
+                                                >
+                                                    {client.name}
+                                                </Link>
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                    <span className="font-mono bg-muted px-1 py-0.5 rounded">
+                                                        {client.code}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div className="text-right text-xs whitespace-nowrap text-muted-foreground">
-                                                {doc.created_at}
-                                            </div>
+
+                                            <Link
+                                                href={clientsRoutes.show(client.id).url}
+                                                className="ml-2 rounded-full bg-amber-100 p-2 text-amber-700 opacity-70 transition-all hover:scale-110 hover:opacity-100 dark:bg-amber-900/30 dark:text-amber-400"
+                                                title="Ir a cargar archivos"
+                                            >
+                                                <ArrowRight className="h-4 w-4" />
+                                            </Link>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
                                 <EmptyState
                                     icon={FileText}
-                                    text="No hay actividad reciente"
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* --- TOP CLIENTES (Ocupa 3 columnas) --- */}
-                    <Card className="col-span-1 h-full shadow-sm md:col-span-3">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                                Top Clientes
-                            </CardTitle>
-                            <CardDescription>
-                                Mayor volumen de archivos
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {topClients.length > 0 ? (
-                                <div className="space-y-5">
-                                    {topClients.map((client, index) => (
-                                        <div
-                                            key={client.id}
-                                            className="flex items-center justify-between"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div
-                                                    className={cn(
-                                                        'flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold',
-                                                        index === 0
-                                                            ? 'bg-yellow-100 text-yellow-700 ring-4 ring-yellow-50'
-                                                            : index === 1
-                                                              ? 'bg-zinc-100 text-zinc-700'
-                                                              : 'bg-zinc-50 text-zinc-500',
-                                                    )}
-                                                >
-                                                    #{index + 1}
-                                                </div>
-                                                <div>
-                                                    <Link
-                                                        href={
-                                                            clientsRoutes.show(
-                                                                client.id,
-                                                            ).url
-                                                        }
-                                                        className="text-sm font-medium hover:underline"
-                                                    >
-                                                        {client.name}
-                                                    </Link>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {client.code}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className="block text-sm font-bold">
-                                                    {client.documents_count}
-                                                </span>
-                                                <span className="text-[10px] text-muted-foreground uppercase">
-                                                    Docs
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <EmptyState
-                                    icon={Building2}
-                                    text="Sin datos aún"
+                                    text="¡Excelente! Todos los clientes tienen documentos."
                                 />
                             )}
                         </CardContent>
@@ -290,7 +203,7 @@ export default function Dashboard({
     );
 }
 
-// --- SUBCOMPONENTES PARA LIMPIAR EL CÓDIGO ---
+// --- SUBCOMPONENTES ---
 
 function StatsCard({ title, value, desc, icon: Icon, color }: any) {
     const colorStyles = {
