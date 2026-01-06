@@ -87,12 +87,8 @@ export default function Dashboard({
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                            Hola, {auth.user.name}
+                            {auth.user.name}
                         </h1>
-                        <p className="mt-1 text-muted-foreground">
-                            Bienvenido de nuevo. Aquí tienes el resumen de
-                            actividad del Banco de PDF.
-                        </p>
                     </div>
                 </div>
 

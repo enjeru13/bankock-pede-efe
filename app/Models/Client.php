@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\TrimsLegacyData;
+use Illuminate\Support\Facades\DB;
 
 class Client extends Model
 {
@@ -33,6 +34,69 @@ class Client extends Model
             $q->where('cli_des', 'like', "%{$term}%")
                 ->orWhere('co_cli', 'like', "%{$term}%");
         });
+    }
+
+    public function scopeAccessibleBy($query, $user)
+    {
+        // If ADMIN, show all active clients (excluding internal codes)
+        if ($user->name === 'ADMIN' || $user->zone === 'ADMIN') {
+             return $query->whereNotIn('co_ven', ['00027', '999']);
+        } 
+        
+        // Filter by user's zone
+        if ($user->zone) {
+            $sqlZoneLogic = "
+                UPPER(TRIM(
+                    CASE 
+                        WHEN seg_des LIKE '%TACHIRA%' 
+                          OR seg_des LIKE '%S/C%' 
+                          OR seg_des LIKE '%FRONTERA%'
+                          OR seg_des LIKE '%PANAMERICANA%'
+                          OR seg_des LIKE '%LLANO%'
+                          OR seg_des LIKE '%PLAZA%'
+                        THEN 'TACHIRA'
+
+                        WHEN CHARINDEX(')', seg_des) > 0 AND CHARINDEX(')', seg_des) < 15
+                        THEN SUBSTRING(
+                                LTRIM(SUBSTRING(seg_des, CHARINDEX(')', seg_des) + 1, LEN(seg_des))), 
+                                1, 
+                                CHARINDEX(' ', LTRIM(SUBSTRING(seg_des, CHARINDEX(')', seg_des) + 1, LEN(seg_des))) + ' ') - 1
+                             )
+
+                        ELSE 
+                            SUBSTRING(
+                                REPLACE(REPLACE(seg_des, '-', ' '), '/', ' '), 
+                                1, 
+                                CHARINDEX(' ', REPLACE(REPLACE(seg_des, '-', ' '), '/', ' ') + ' ') - 1
+                            )
+                    END
+                ))
+            ";
+
+            $allowedSegments = DB::connection('sqlsrv')
+                ->table('segmento')
+                ->whereRaw("{$sqlZoneLogic} = ?", [$user->zone])
+                ->pluck('co_seg');
+
+            return $query->whereIn('co_seg', $allowedSegments);
+        } 
+        
+        // Filter by vendor code
+        if ($user->co_ven) {
+            $allowedSegments = DB::connection('sqlsrv')
+                ->table('vendedor as v')
+                ->join('clientes as c', 'v.co_ven', '=', 'c.co_ven')
+                ->join('segmento as s', 'c.co_seg', '=', 's.co_seg')
+                ->where('v.co_ven', $user->co_ven)
+                ->whereNotIn('v.co_ven', ['00027', '999']) // Fixed: using v.co_ven or just co_ven if unambiguous
+                ->where('s.co_seg', '<>', '99999')  
+                ->distinct()
+                ->pluck('s.co_seg');
+
+            return $query->whereIn('co_seg', $allowedSegments);
+        }
+
+        return $query;
     }
 
     public function getDocumentCountAttribute(): int

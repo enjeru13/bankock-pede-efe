@@ -67,6 +67,21 @@ class Document extends Model
         });
     }
 
+    public function scopeAccessibleBy($query, $user)
+    {
+        // Admin - Show everything (or apply specific admin filters if needed)
+        if ($user->name === 'ADMIN' || $user->zone === 'ADMIN') {
+             return $query;
+        }
+
+        // Non-Admin - Fetch IDs from the other database
+        // optimizing: limiting columns to pluck
+        // We use the scope to get the query, then pluck the IDs
+        $clientIds = Client::accessibleBy($user)->pluck('co_cli');
+
+        return $query->whereIn('client_id', $clientIds);
+    }
+
     public function scopeRecent($query, $limit = 10)
     {
         return $query->orderBy('created_at', 'desc')->limit($limit);

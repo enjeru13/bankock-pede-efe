@@ -15,23 +15,24 @@ class DashboardController extends Controller
     {
         $stats = [
             // Total de clientes activos
-            'total_clients' => Client::active()->count(),
+            'total_clients' => Client::active()->accessibleBy(auth()->user())->count(),
 
             // Total de documentos
-            'total_documents' => Document::count(),
+            'total_documents' => Document::accessibleBy(auth()->user())->count(),
 
             // Espacio total utilizado
-            'total_storage' => Document::sum('file_size'),
+            'total_storage' => Document::accessibleBy(auth()->user())->sum('file_size'),
 
             // Espacio formateado
-            'formatted_storage' => $this->formatBytes(Document::sum('file_size')),
+            'formatted_storage' => $this->formatBytes(Document::accessibleBy(auth()->user())->sum('file_size')),
 
             // Total de descargas
-            'total_downloads' => Document::sum('downloaded_count'),
+            'total_downloads' => Document::accessibleBy(auth()->user())->sum('downloaded_count'),
         ];
 
         // Documentos recientes (últimos 5)
         $recentDocuments = Document::with(['client:co_cli', 'uploadedBy:id,name'])
+            ->accessibleBy(auth()->user())
             ->orderBy('created_at', 'desc')
             ->limit(3)
             ->get()
@@ -50,6 +51,7 @@ class DashboardController extends Controller
             });
 
         $topClientStats = Document::select('client_id')
+            ->accessibleBy(auth()->user())
             ->selectRaw('count(*) as count')
             ->selectRaw('sum(file_size) as total_size')
             ->whereNull('deleted_at')
@@ -81,7 +83,9 @@ class DashboardController extends Controller
         })->filter()->values();
 
         // Distribución por categorías (usando la nueva estructura relacional)
-        $categoriesDistribution = Category::withCount('documents')
+        $categoriesDistribution = Category::withCount(['documents' => function ($query) {
+                $query->accessibleBy(auth()->user());
+            }])
             ->having('documents_count', '>', 0)
             ->orderBy('documents_count', 'desc')
             ->take(5)

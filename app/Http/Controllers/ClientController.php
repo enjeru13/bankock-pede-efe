@@ -10,7 +10,7 @@ use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\DB;
+
 
 class ClientController extends Controller
 {
@@ -32,62 +32,8 @@ class ClientController extends Controller
         }
 
         // Filter by vendor's segments
-        // Filter by user's zone or vendor code
-        $user = auth()->user();
-
-        // If ADMIN, show all active clients (or whatever logic for "all")
-        if ($user->name === 'ADMIN' || $user->zone === 'ADMIN') {
-             $query->whereNotIn('co_ven', ['00027', '999']);
-        } 
-        elseif ($user->zone) {
-            $sqlZoneLogic = "
-                UPPER(TRIM(
-                    CASE 
-                        WHEN seg_des LIKE '%TACHIRA%' 
-                          OR seg_des LIKE '%S/C%' 
-                          OR seg_des LIKE '%FRONTERA%'
-                          OR seg_des LIKE '%PANAMERICANA%'
-                          OR seg_des LIKE '%LLANO%'
-                          OR seg_des LIKE '%PLAZA%'
-                        THEN 'TACHIRA'
-
-                        WHEN CHARINDEX(')', seg_des) > 0 AND CHARINDEX(')', seg_des) < 15
-                        THEN SUBSTRING(
-                                LTRIM(SUBSTRING(seg_des, CHARINDEX(')', seg_des) + 1, LEN(seg_des))), 
-                                1, 
-                                CHARINDEX(' ', LTRIM(SUBSTRING(seg_des, CHARINDEX(')', seg_des) + 1, LEN(seg_des))) + ' ') - 1
-                             )
-
-                        ELSE 
-                            SUBSTRING(
-                                REPLACE(REPLACE(seg_des, '-', ' '), '/', ' '), 
-                                1, 
-                                CHARINDEX(' ', REPLACE(REPLACE(seg_des, '-', ' '), '/', ' ') + ' ') - 1
-                            )
-                    END
-                ))
-            ";
-
-            $allowedSegments = DB::connection('sqlsrv')
-                ->table('segmento')
-                ->whereRaw("{$sqlZoneLogic} = ?", [$user->zone])
-                ->pluck('co_seg');
-
-            $query->whereIn('co_seg', $allowedSegments);
-
-        } elseif ($user->co_ven) {
-            $allowedSegments = DB::connection('sqlsrv')
-                ->table('vendedor as v')
-                ->join('clientes as c', 'v.co_ven', '=', 'c.co_ven')
-                ->join('segmento as s', 'c.co_seg', '=', 's.co_seg')
-                ->where('v.co_ven', $user->co_ven)
-                ->whereNotIn('co_ven', ['00027', '999'])
-                ->where('s.co_seg', '<>', '99999')  
-                ->distinct()
-                ->pluck('s.co_seg');
-
-            $query->whereIn('co_seg', $allowedSegments);
-        }
+        // Filter by vendor's segments or user's zone using the scope
+        $query->accessibleBy(auth()->user());
 
         $clients = $query->paginate(15)
             ->withQueryString();
