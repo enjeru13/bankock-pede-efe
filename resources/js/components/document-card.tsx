@@ -130,10 +130,12 @@ export function DocumentCard({
                                     <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
                                     Vista Previa
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleDownload}>
-                                    <Download className="mr-2 h-4 w-4 text-muted-foreground" />
-                                    Descargar
-                                </DropdownMenuItem>
+                                {isAdmin && (
+                                    <DropdownMenuItem onClick={handleDownload}>
+                                        <Download className="mr-2 h-4 w-4 text-muted-foreground" />
+                                        Descargar
+                                    </DropdownMenuItem>
+                                )}
 
                                 {isAdmin && (
                                     <>

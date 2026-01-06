@@ -30,9 +30,9 @@ class DocumentController extends Controller
                     $q->where('title', 'like', "%{$search}%")
                         ->orWhere('filename', 'like', "%{$search}%")
                         ->orWhereHas('client', function ($qClient) use ($search) {
-                        $qClient->where('cli_des', 'like', "%{$search}%")
-                            ->orWhere('co_cli', 'like', "%{$search}%");
-                    });
+                            $qClient->where('cli_des', 'like', "%{$search}%")
+                                ->orWhere('co_cli', 'like', "%{$search}%");
+                        });
                 });
             })
             ->when($category, function ($query, $category) {
@@ -153,6 +153,10 @@ class DocumentController extends Controller
 
     public function download(Document $document): StreamedResponse
     {
+        if (!auth()->user()->is_admin) {
+            abort(403, 'No tiene permiso para descargar documentos.');
+        }
+
         if (!$document->fileExists()) {
             abort(404, 'El archivo no existe en el servidor.');
         }

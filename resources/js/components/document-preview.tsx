@@ -27,22 +27,29 @@ interface DocumentPreviewProps {
     onOpenChange: (open: boolean) => void;
 }
 
+import { usePage } from '@inertiajs/react';
+import { SharedData } from '@/types';
+
+// ... (interfaces)
+
 export function DocumentPreview({
     document,
     open,
     onOpenChange,
 }: DocumentPreviewProps) {
+    const { auth } = usePage<SharedData>().props;
+
     if (!document) return null;
 
     // Construcción de URLs
-    const previewUrl = `/documents/${document.id}/preview`;
+    const previewUrl = `/documents/${document.id}/preview#toolbar=0&navpanes=0&scrollbar=0`;
     const downloadUrl = documents.download(document.id).url;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="flex h-[90vh] max-w-4xl flex-col gap-0 p-0">
                 <DialogHeader className="border-b p-4">
-                    <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                    <div className="grid grid-cols-[1fr_auto] items-center gap-4 pr-8">
                         {/* Información del documento */}
                         <div>
                             <DialogTitle className="line-clamp-1">
@@ -70,18 +77,23 @@ export function DocumentPreview({
                                     Abrir
                                 </a>
                             </Button>
-                            <Button size="sm" asChild>
-                                <a href={downloadUrl} aria-label="Descargar documento">
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Descargar
-                                </a>
-                            </Button>
+                            {auth.user.is_admin && (
+                                <Button size="sm" asChild>
+                                    <a href={downloadUrl} aria-label="Descargar documento">
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Descargar
+                                    </a>
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </DialogHeader>
 
                 {/* Vista previa */}
-                <div className="h-full w-full flex-1 overflow-hidden bg-muted/20 p-4">
+                <div
+                    className="h-full w-full flex-1 overflow-hidden bg-muted/20 p-4"
+                    onContextMenu={(e) => e.preventDefault()}
+                >
                     <iframe
                         src={previewUrl}
                         className="h-full w-full rounded-md border bg-background"

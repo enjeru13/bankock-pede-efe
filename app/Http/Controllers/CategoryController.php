@@ -25,6 +25,10 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+        if (!auth()->user()->is_admin) {
+            abort(403);
+        }
+
         $request->validate([
             'name' => 'required|string|max:100|unique:categories,name',
         ]);
@@ -41,6 +45,10 @@ class CategoryController extends Controller
      */
     public function update(Request $request)
     {
+        if (!auth()->user()->is_admin) {
+            abort(403);
+        }
+
         $request->validate([
             'id' => 'required|exists:categories,id',
             'name' => 'required|string|max:100|unique:categories,name,' . $request->id,
@@ -57,6 +65,10 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request)
     {
+        if (!auth()->user()->is_admin) {
+            abort(403);
+        }
+
         $request->validate([
             'id' => 'required|exists:categories,id',
         ]);

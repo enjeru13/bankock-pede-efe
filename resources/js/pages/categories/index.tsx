@@ -38,9 +38,10 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import categoriesRoutes from '@/routes/categories';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Folder, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { SharedData } from '@/types';
 
 interface Category {
     id: number;
@@ -53,6 +54,9 @@ interface Props {
 }
 
 export default function CategoriesIndex({ categories }: Props) {
+    const { auth } = usePage<SharedData>().props;
+    const isAdmin = auth.user.is_admin;
+
     const [search, setSearch] = useState('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(
@@ -90,7 +94,7 @@ export default function CategoriesIndex({ categories }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Dashboard',
-            href: dashboard(),
+            href: dashboard().url,
         },
         {
             title: 'Categorías',
@@ -166,6 +170,12 @@ export default function CategoriesIndex({ categories }: Props) {
                         <Plus className="mr-2 h-4 w-4" />
                         Nueva Categoría
                     </Button>
+                    {isAdmin && (
+                        <Button onClick={() => setIsCreateOpen(true)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Nueva Categoría
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -196,9 +206,11 @@ export default function CategoriesIndex({ categories }: Props) {
                                     <TableHead className="text-right">
                                         Documentos
                                     </TableHead>
-                                    <TableHead className="text-right">
-                                        Acciones
-                                    </TableHead>
+                                    {isAdmin && (
+                                        <TableHead className="text-right">
+                                            Acciones
+                                        </TableHead>
+                                    )}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -214,37 +226,39 @@ export default function CategoriesIndex({ categories }: Props) {
                                             <TableCell className="text-right">
                                                 {cat.documents_count}
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() =>
-                                                            handleEditClick(cat)
-                                                        }
-                                                    >
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="text-destructive hover:text-destructive"
-                                                        onClick={() =>
-                                                            setDeletingCategory(
-                                                                cat,
-                                                            )
-                                                        }
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+                                            {isAdmin && (
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() =>
+                                                                handleEditClick(cat)
+                                                            }
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="text-destructive hover:text-destructive"
+                                                            onClick={() =>
+                                                                setDeletingCategory(
+                                                                    cat,
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            )}
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={3}
+                                            colSpan={isAdmin ? 3 : 2}
                                             className="h-24 text-center"
                                         >
                                             No se encontraron categorías.
