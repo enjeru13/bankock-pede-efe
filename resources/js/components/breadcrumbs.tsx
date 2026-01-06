@@ -29,6 +29,16 @@ export function Breadcrumbs({
                                             <BreadcrumbPage>
                                                 {item.title}
                                             </BreadcrumbPage>
+                                        ) : item.href === '#back' ? (
+                                            <BreadcrumbLink
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    window.history.back();
+                                                }}
+                                            >
+                                                {item.title}
+                                            </BreadcrumbLink>
                                         ) : (
                                             <BreadcrumbLink asChild>
                                                 <Link href={item.href}>

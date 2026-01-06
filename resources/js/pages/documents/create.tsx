@@ -66,7 +66,7 @@ export default function DocumentsCreate({ client, categories }: Props) {
         },
         {
             title: 'Documentos',
-            href: documentsRoutes.index().url,
+            href: '#back',
         },
         {
             title: 'Subir Documento',
