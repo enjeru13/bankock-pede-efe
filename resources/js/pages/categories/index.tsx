@@ -38,10 +38,10 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import categoriesRoutes from '@/routes/categories';
 import type { BreadcrumbItem } from '@/types';
+import { SharedData } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Folder, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { SharedData } from '@/types';
 
 interface Category {
     id: number;
@@ -55,7 +55,7 @@ interface Props {
 
 export default function CategoriesIndex({ categories }: Props) {
     const { auth } = usePage<SharedData>().props;
-    const isAdmin = auth.user.is_admin;
+    const isAdmin = auth.user.zone === 'ADMIN';
 
     const [search, setSearch] = useState('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -166,10 +166,6 @@ export default function CategoriesIndex({ categories }: Props) {
                             Administra las categorías de los documentos.
                         </p>
                     </div>
-                    <Button onClick={() => setIsCreateOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Nueva Categoría
-                    </Button>
                     {isAdmin && (
                         <Button onClick={() => setIsCreateOpen(true)}>
                             <Plus className="mr-2 h-4 w-4" />
@@ -233,7 +229,9 @@ export default function CategoriesIndex({ categories }: Props) {
                                                             variant="ghost"
                                                             size="icon"
                                                             onClick={() =>
-                                                                handleEditClick(cat)
+                                                                handleEditClick(
+                                                                    cat,
+                                                                )
                                                             }
                                                         >
                                                             <Pencil className="h-4 w-4" />

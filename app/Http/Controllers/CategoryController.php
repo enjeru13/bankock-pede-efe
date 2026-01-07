@@ -25,7 +25,7 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        if (auth()->user()->zone !== 'ADMIN') {
             abort(403);
         }
 
@@ -45,7 +45,7 @@ class CategoryController extends Controller
      */
     public function update(Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        if (auth()->user()->zone !== 'ADMIN') {
             abort(403);
         }
 
@@ -65,7 +65,7 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        if (auth()->user()->zone !== 'ADMIN') {
             abort(403);
         }
 
