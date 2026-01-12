@@ -175,25 +175,19 @@ export default function Dashboard({
                         </h2>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                             {categoriesDistribution.map((item) => (
-                                <Link
-                                    key={item.category}
-                                    href={`/documents?category=${encodeURIComponent(item.category)}`}
-                                    className="group block"
-                                >
-                                    <Card className="h-full border transition-all hover:border-primary/50 hover:shadow-md">
-                                        <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                                            <div className="mb-3 rounded-full bg-secondary p-3 transition-transform group-hover:scale-110">
-                                                <FileText className="h-5 w-5 text-primary" />
-                                            </div>
-                                            <div className="text-2xl font-bold tracking-tight">
-                                                {item.count}
-                                            </div>
-                                            <div className="mt-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                {item.category}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
+                                <Card className="h-full border transition-all hover:border-primary/50 hover:shadow-md">
+                                    <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+                                        <div className="mb-3 rounded-full bg-secondary p-3 transition-transform group-hover:scale-110">
+                                            <FileText className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <div className="text-2xl font-bold tracking-tight">
+                                            {item.count}
+                                        </div>
+                                        <div className="mt-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                                            {item.category}
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             ))}
                         </div>
                     </div>

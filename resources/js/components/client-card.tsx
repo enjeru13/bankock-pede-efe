@@ -13,55 +13,64 @@ interface ClientCardProps {
 export function ClientCard({ client }: ClientCardProps) {
     const isActive = client.inactivo;
     const hasDocuments = (client.documents_count || 0) > 0;
+    const isComplete = client.is_complete || false;
+
     return (
         <Link
             href={clientsRoutes.show(client.co_cli).url}
             className="block h-full"
         >
-            <Card className="group relative flex h-full cursor-pointer flex-col overflow-hidden border-border/50 transition-all duration-300 hover:border-primary/50 hover:shadow-lg">
-                {/* Decoración superior sutil */}
-                <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-
+            <Card
+                className={cn(
+                    'group relative flex h-full cursor-pointer flex-col overflow-hidden border transition-all duration-300 hover:shadow-lg',
+                    isComplete
+                        ? 'border-green-300 bg-gradient-to-br from-green-100/60 to-transparent dark:border-green-700/50 dark:from-green-900/30'
+                        : hasDocuments
+                            ? 'border-red-300 bg-gradient-to-br from-red-100/60 to-transparent dark:border-red-700/50 dark:from-red-900/30'
+                            : 'border-border/50',
+                    'hover:border-primary/50'
+                )}
+            >
                 <CardContent className="flex flex-1 flex-col p-5">
                     {/* Header: Icono y Estado */}
                     <div className="mb-4 flex items-start justify-between">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition-transform duration-300 group-hover:scale-105 dark:bg-blue-900/20 dark:text-blue-400">
-                            <Building2 className="h-5 w-5" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background shadow-sm ring-1 ring-border/50 transition-transform duration-300 group-hover:scale-105">
+                            <Building2 className="h-5 w-5 text-muted-foreground" />
                         </div>
 
                         {/* Indicadores de Estado */}
                         <div className="flex flex-col items-end gap-1.5">
+                            {/* Badge de Conteo de Archivos */}
+                            <div className="flex items-center gap-1.5">
+                                <span className={cn(
+                                    "flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold shadow-sm",
+                                    hasDocuments
+                                        ? "bg-primary/20 text-primary font-bold border border-primary/20"
+                                        : "bg-muted text-muted-foreground"
+                                )}>
+                                    <FileText className="h-3 w-3" />
+                                    {client.documents_count || 0}
+                                </span>
+                            </div>
+
                             {/* Estado Activo/Inactivo */}
                             <div
                                 className={cn(
-                                    'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium',
+                                    'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium bg-background',
                                     isActive == 0
-                                        ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900/30 dark:bg-green-900/20 dark:text-green-400'
-                                        : 'border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400',
+                                        ? 'border-green-300 text-green-800 dark:border-green-700 dark:text-green-300'
+                                        : 'border-zinc-300 text-zinc-700 dark:border-zinc-600 dark:text-zinc-300',
                                 )}
                             >
                                 <span
                                     className={cn(
                                         'h-1.5 w-1.5 rounded-full',
                                         isActive == 0
-                                            ? 'bg-green-500'
-                                            : 'bg-zinc-400',
+                                            ? 'bg-green-600'
+                                            : 'bg-zinc-500',
                                     )}
                                 />
                                 {isActive == 0 ? 'Activo' : 'Inactivo'}
-                            </div>
-
-                            {/* Estado de Documentos */}
-                            <div
-                                className={cn(
-                                    'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium',
-                                    hasDocuments // Usas la variable simple aquí
-                                        ? 'border-blue-200 bg-blue-50 text-blue-700 ...'
-                                        : 'border-amber-200 bg-amber-50 text-amber-700 ...'
-                                )}
-                            >
-                                <FileText className="h-3 w-3" />
-                                {hasDocuments ? 'Con archivos' : 'Sin archivos'}
                             </div>
                         </div>
                     </div>

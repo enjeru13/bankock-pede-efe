@@ -24,7 +24,7 @@ interface FileUploaderProps {
 export function FileUploader({
     onFileSelect,
     error,
-    maxSize = 10
+    maxSize = 1024
 }: FileUploaderProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);

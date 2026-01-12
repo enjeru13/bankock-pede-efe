@@ -35,6 +35,7 @@ interface Props {
     filters: {
         search?: string;
         status?: string;
+        file_status?: string;
     };
 }
 
@@ -52,6 +53,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ClientsIndex({ clients, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || 'all');
+    const [fileStatus, setFileStatus] = useState(filters.file_status || 'all');
 
     /**
      * Aplicar filtros
@@ -62,6 +64,7 @@ export default function ClientsIndex({ clients, filters }: Props) {
             {
                 search: search || undefined,
                 status: status !== 'all' ? status : undefined,
+                file_status: fileStatus !== 'all' ? fileStatus : undefined,
             },
             {
                 preserveState: true,
@@ -76,6 +79,7 @@ export default function ClientsIndex({ clients, filters }: Props) {
     const handleClearFilters = () => {
         setSearch('');
         setStatus('all');
+        setFileStatus('all');
         router.get(clientsRoutes.index().url);
     };
 
@@ -128,9 +132,21 @@ export default function ClientsIndex({ clients, filters }: Props) {
                             <SelectValue placeholder="Estado" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todos</SelectItem>
+                            <SelectItem value="all">Todos los Estados</SelectItem>
                             <SelectItem value="active">Activos</SelectItem>
                             <SelectItem value="inactive">Inactivos</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    {/* Filtro de Archivos */}
+                    <Select value={fileStatus} onValueChange={setFileStatus}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Archivos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos los Archivos</SelectItem>
+                            <SelectItem value="with_files">Con Archivos</SelectItem>
+                            <SelectItem value="without_files">Sin Archivos</SelectItem>
                         </SelectContent>
                     </Select>
 

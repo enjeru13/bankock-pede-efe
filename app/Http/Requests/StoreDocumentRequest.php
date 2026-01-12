@@ -32,7 +32,7 @@ class StoreDocumentRequest extends FormRequest
         return [
             // Título del documento (obligatorio)
             'title' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
             ],
@@ -66,7 +66,7 @@ class StoreDocumentRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:pdf', // Solo archivos PDF
-                'max:10240', // Máximo 10MB (en kilobytes)
+                'max:1048576', // Máximo 1GB (en kilobytes)
             ],
         ];
     }
@@ -79,23 +79,16 @@ class StoreDocumentRequest extends FormRequest
     public function messages(): array
     {
         return [
-
-
-            'title.required' => 'El título del documento es obligatorio.',
             'title.max' => 'El título no puede tener más de 255 caracteres.',
-
             'description.max' => 'La descripción no puede tener más de 1000 caracteres.',
-
             'category.max' => 'La categoría no puede tener más de 100 caracteres.',
-
             'tags.array' => 'Las etiquetas deben ser un array.',
             'tags.*.string' => 'Cada etiqueta debe ser texto.',
             'tags.*.max' => 'Cada etiqueta no puede tener más de 50 caracteres.',
-
             'file.required' => 'Debe seleccionar un archivo PDF.',
             'file.file' => 'El archivo no es válido.',
             'file.mimes' => 'El archivo debe ser un PDF.',
-            'file.max' => 'El archivo no puede ser mayor a 10MB.',
+            'file.max' => 'El archivo no puede ser mayor a 1GB.',
         ];
     }
 

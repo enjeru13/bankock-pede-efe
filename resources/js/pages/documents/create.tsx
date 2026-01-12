@@ -174,7 +174,6 @@ export default function DocumentsCreate({ client, categories }: Props) {
                             <div className="space-y-2">
                                 <Label htmlFor="title">
                                     Título{' '}
-                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                     id="title"
@@ -322,6 +321,7 @@ export default function DocumentsCreate({ client, categories }: Props) {
                                 <FileUploader
                                     onFileSelect={handleFileSelect}
                                     error={errors.file as string}
+                                    maxSize={1024}
                                 />
                             </div>
                         </CardContent>

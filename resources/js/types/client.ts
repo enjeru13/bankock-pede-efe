@@ -10,6 +10,8 @@ export interface Client {
     phone?: string;
     inactivo?: number;
     documents_count?: number;
+    categories_count?: number;
+    is_complete?: boolean;
     formatted_total_size?: string;
 }
 
