@@ -4,10 +4,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CategoryController;
-use App\Models\Client;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,6 +94,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Búsqueda de documentos (AJAX)
     Route::get('search/documents', [DocumentController::class, 'search'])
         ->name('documents.search');
+
+    // Herramientas
+    Route::prefix('tools')->name('tools.')->group(function () {
+
+        Route::get('pdf-splitter', [\App\Http\Controllers\PdfSplitterController::class, 'index'])
+            ->name('pdf-splitter');
+
+        Route::post('pdf-splitter/upload', [\App\Http\Controllers\PdfSplitterController::class, 'upload'])
+            ->name('pdf-splitter.upload');
+
+        Route::post('pdf-splitter/split', [\App\Http\Controllers\PdfSplitterController::class, 'split'])
+            ->name('pdf-splitter.split');
+
+        Route::post('pdf-splitter/save-to-client', [\App\Http\Controllers\PdfSplitterController::class, 'saveToClient'])
+            ->name('pdf-splitter.save-to-client');
+
+        Route::post('pdf-splitter/download', [\App\Http\Controllers\PdfSplitterController::class, 'download'])
+            ->name('pdf-splitter.download');
+
+        Route::post('pdf-splitter/cleanup', [\App\Http\Controllers\PdfSplitterController::class, 'cleanup'])
+            ->name('pdf-splitter.cleanup');
+        Route::get('pdf-splitter/preview', [\App\Http\Controllers\PdfSplitterController::class, 'preview'])
+            ->name('pdf-splitter.preview');
+    });
 });
 
 /*

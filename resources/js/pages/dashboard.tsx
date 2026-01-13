@@ -27,7 +27,7 @@ interface Stats {
     total_documents: number;
     total_storage: number;
     formatted_storage: string;
-    total_missing_docs: number; // El total real calculado en backend
+    total_missing_docs: number;
 }
 
 interface ClientWithoutDocs {
@@ -45,7 +45,7 @@ interface CategoryDistribution {
 interface Props {
     stats: Stats;
     categoriesDistribution: CategoryDistribution[];
-    clientsWithoutDocuments: ClientWithoutDocs[]; // La lista limitada (visual)
+    clientsWithoutDocuments: ClientWithoutDocs[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -175,7 +175,7 @@ export default function Dashboard({
                         </h2>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                             {categoriesDistribution.map((item) => (
-                                <Card className="h-full border transition-all hover:border-primary/50 hover:shadow-md">
+                                <Card key={item.category} className="h-full border transition-all hover:border-primary/50 hover:shadow-md">
                                     <CardContent className="flex flex-col items-center justify-center p-6 text-center">
                                         <div className="mb-3 rounded-full bg-secondary p-3 transition-transform group-hover:scale-110">
                                             <FileText className="h-5 w-5 text-primary" />

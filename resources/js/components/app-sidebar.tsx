@@ -14,7 +14,7 @@ import categoriesRoutes from '@/routes/categories';
 import clientsRoutes from '@/routes/clients';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Folder, LayoutGrid, Users } from 'lucide-react';
+import { Folder, LayoutGrid, Users, Scissors } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -29,15 +29,18 @@ export function AppSidebar() {
             href: clientsRoutes.index().url,
             icon: Users,
         },
-        // {
-        //     title: 'Documentos',
-        //     href: documentsRoutes.index().url,
-        //     icon: FileText,
-        // },
         {
             title: 'Categorías',
             href: categoriesRoutes.index().url,
             icon: Folder,
+        },
+    ];
+
+    const toolsNavItems: NavItem[] = [
+        {
+            title: 'Dividir PDF',
+            href: '/tools/pdf-splitter',
+            icon: Scissors,
         },
     ];
 
@@ -57,6 +60,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                <NavMain items={toolsNavItems} label="Herramientas" />
             </SidebarContent>
 
             <SidebarFooter>
