@@ -27,8 +27,22 @@ import {
     LayoutTemplate,
     UserCheck,
     Files,
-    FilePlus2
+    FilePlus2,
+    Check, ChevronsUpDown
 } from 'lucide-react';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 import { useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Toaster, toast } from 'sonner';
@@ -78,7 +92,7 @@ export default function PdfSplitter({ clients, categories }: Props) {
     const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
     const [splits, setSplits] = useState<Split[]>([]);
     const [globalClientId, setGlobalClientId] = useState<string>("");
-
+    const [openCombobox, setOpenCombobox] = useState(false)
     const [isUploading, setIsUploading] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -332,23 +346,59 @@ export default function PdfSplitter({ clients, categories }: Props) {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                         {/* IZQUIERDA */}
                         <div className="sticky top-6 space-y-4">
-                            <Card className="border-primary/20 shadow-md bg-black">
+                            <Card className="border-primary/20 shadow-md">
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-base flex items-center gap-2 text-primary">
                                         <UserCheck className="h-5 w-5" /> Cliente Destino
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <Select value={globalClientId} onValueChange={setGlobalClientId}>
-                                        <SelectTrigger className="bg-background h-10">
-                                            <SelectValue placeholder="Seleccionar Cliente..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {clients.map((client) => (
-                                                <SelectItem key={client.co_cli} value={client.co_cli}>{client.cli_des}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                aria-expanded={openCombobox}
+                                                className="w-full justify-between bg-background text-foreground"
+                                            >
+                                                {globalClientId
+                                                    ? clients.find((client) => client.co_cli === globalClientId)?.cli_des
+                                                    : "Buscar cliente por nombre o código..."}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                            <Command>
+                                                <CommandInput placeholder="Escribe nombre o código..." />
+                                                <CommandList>
+                                                    <CommandEmpty>No se encontró el cliente.</CommandEmpty>
+                                                    <CommandGroup>
+                                                        {clients.map((client) => (
+                                                            <CommandItem
+                                                                key={client.co_cli}
+                                                                value={`${client.cli_des} ${client.co_cli}`}
+                                                                onSelect={() => {
+                                                                    setGlobalClientId(client.co_cli === globalClientId ? "" : client.co_cli)
+                                                                    setOpenCombobox(false)
+                                                                }}
+                                                            >
+                                                                <Check
+                                                                    className={cn(
+                                                                        "mr-2 h-4 w-4",
+                                                                        globalClientId === client.co_cli ? "opacity-100" : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                <div className="flex flex-col">
+                                                                    <span>{client.cli_des}</span>
+                                                                    <span className="text-xs text-muted-foreground">Código: {client.co_cli}</span>
+                                                                </div>
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
                                 </CardContent>
                             </Card>
 
@@ -382,7 +432,7 @@ export default function PdfSplitter({ clients, categories }: Props) {
                                     </div>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="flex flex-wrap gap-2 p-1 bg-muted/30 rounded-lg">
+                                    <div className="flex flex-wrap gap-2 p-1">
                                         <Button variant="ghost" size="sm" onClick={selectAll} className="flex-1">
                                             <CheckSquare className="h-4 w-4 mr-2" /> Todas
                                         </Button>
@@ -439,7 +489,7 @@ export default function PdfSplitter({ clients, categories }: Props) {
 
                             {splits.length > 0 ? (
                                 <Card className="border-2 border-primary/10 shadow-sm">
-                                    <CardHeader className="bg-primary/5 pb-3">
+                                    <CardHeader className="pb-3">
                                         <CardTitle className="flex items-center gap-2 text-base">
                                             <LayoutTemplate className="h-5 w-5 text-primary" /> Documentos a Generar ({splits.length})
                                         </CardTitle>
@@ -476,7 +526,7 @@ export default function PdfSplitter({ clients, categories }: Props) {
                                                     </div>
 
                                                     {split.action === 'save' && (
-                                                        <div className="p-3 bg-black/50 rounded-md border border-gray-700 text-sm space-y-3">
+                                                        <div className="p-3 rounded-md border border-gray-200 text-sm space-y-3">
                                                             <div className="grid gap-3 sm:grid-cols-2">
                                                                 <div className="space-y-3">
                                                                     <Label className="text-xs">Categoría</Label>
