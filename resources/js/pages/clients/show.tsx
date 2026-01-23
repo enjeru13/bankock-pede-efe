@@ -9,16 +9,7 @@ import documentsRoutes from '@/routes/documents';
 import type { BreadcrumbItem } from '@/types';
 import type { ClientDetail } from '@/types/client';
 import { Head, Link } from '@inertiajs/react';
-import {
-    Building2,
-    FileText,
-    HardDrive,
-    LayoutGrid,
-    Mail,
-    MapPin,
-    Phone,
-    Plus,
-} from 'lucide-react';
+import { Building2, FileText, HardDrive, LayoutGrid, Mail, MapPin, Phone, Plus, FileSpreadsheet } from 'lucide-react';
 
 interface Stats {
     total_documents: number;
@@ -50,6 +41,11 @@ export default function ClientsShow({ client, stats, categories }: Props) {
         { title: 'Clientes', href: clientsRoutes.index().url },
         { title: client.cli_des, href: clientsRoutes.show(client.co_cli).url },
     ];
+
+    const handleExportClientExcel = () => {
+        // Redirige al endpoint pasando el ID del cliente
+        window.location.href = `/clients/${client.co_cli}/export-matrix`;
+    };
 
     const isActive = client.inactivo;
 
@@ -226,12 +222,22 @@ export default function ClientsShow({ client, stats, categories }: Props) {
                                 Documentos Asociados
                             </h2>
                         </div>
-                        <Link href={documentsRoutes.create(client.co_cli).url}>
-                            <Button>
-                                <Plus className="mr-2 h-4 w-4" />
-                                Subir Nuevo
+                        <div className="flex items-center gap-4">
+                            <Button
+                                onClick={handleExportClientExcel}
+                                variant="outline"
+                                className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                            >
+                                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                Exportar Excel de Documentos
                             </Button>
-                        </Link>
+                            <Link href={documentsRoutes.create(client.co_cli).url}>
+                                <Button>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Subir Nuevo
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
 
                     {client.documents && client.documents.length > 0 ? (

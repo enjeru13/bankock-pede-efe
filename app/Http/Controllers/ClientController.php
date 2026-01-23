@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\Category;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\Client;
 use App\Models\Document;
-use App\Models\Category;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -144,5 +146,156 @@ class ClientController extends Controller
         $bytes /= pow(1024, $pow);
 
         return round($bytes, $precision) . ' ' . $units[$pow];
+    }
+
+    public function exportMatrix(): StreamedResponse
+    {
+        $fileName = 'matriz_clientes_' . date('Y_m_d_H_i') . '.xls'; // Cambiamos a .xls para mejor compatibilidad con estilos
+
+        $categories = Category::orderBy('name')->get();
+        $clients = Client::active()->orderBy('cli_des')->get();
+
+        $documentMatrix = DB::table('documents')
+            ->select('client_id', 'category_id')
+            ->groupBy('client_id', 'category_id')
+            ->get()
+            ->groupBy('client_id');
+
+        $headers = [
+            "Content-type" => "application/vnd.ms-excel", // Cambiado para que Excel tome el control
+            "Content-Disposition" => "attachment; filename={$fileName}",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $callback = function () use ($clients, $categories, $documentMatrix) {
+            $file = fopen('php://output', 'w');
+
+            // Empezamos a escribir la estructura HTML/Excel con estilos CSS
+            echo '
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta http-equiv="Content-type" content="text/html;charset=utf-8" />
+            <style>
+                .header { background-color: #1e293b; color: #ffffff; font-weight: bold; border: 1px solid #000000; height: 35px; }
+                .client-info { background-color: #f8fafc; font-weight: bold; border: 1px solid #000000; }
+                .si { color: #15803d; background-color: #dcfce7; text-align: center; font-weight: bold; border: 1px solid #000000; }
+                .no { color: #b91c1c; background-color: #fee2e2; text-align: center; font-weight: bold; border: 1px solid #000000; }
+                td { width: 150px; height: 25px; border: 0.5pt solid #cccccc; }
+            </style>
+        </head>
+        <body>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="header">Código</th>
+                        <th class="header" style="width: 350px;">Nombre del Cliente</th>';
+
+            foreach ($categories as $cat) {
+                echo '<th class="header">' . htmlspecialchars($cat->name) . '</th>';
+            }
+
+            echo '      </tr>
+                </thead>
+                <tbody>';
+
+            foreach ($clients as $client) {
+                $clientDocs = $documentMatrix->get($client->co_cli, collect());
+
+                echo '<tr>';
+                echo '<td class="client-info">' . $client->co_cli . '</td>';
+                echo '<td class="client-info">' . htmlspecialchars($client->cli_des) . '</td>';
+
+                foreach ($categories as $cat) {
+                    $hasDoc = $clientDocs->contains('category_id', $cat->id);
+                    if ($hasDoc) {
+                        echo '<td class="si">SÍ</td>';
+                    } else {
+                        echo '<td class="no">NO</td>';
+                    }
+                }
+                echo '</tr>';
+            }
+
+            echo '  </tbody>
+            </table>
+        </body>
+        </html>';
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportClientMatrix(Client $client): StreamedResponse
+    {
+        // Nombre del archivo personalizado con el nombre del cliente
+        $safeName = str_replace(' ', '_', $client->cli_des);
+        $fileName = "matriz_{$client->co_cli}_{$safeName}_" . date('Y_m_d') . ".xls";
+
+        $categories = Category::orderBy('name')->get();
+
+        // Obtenemos solo las categorías que este cliente específico tiene
+        $clientCategoryIds = DB::table('documents')
+            ->where('client_id', $client->co_cli)
+            ->distinct()
+            ->pluck('category_id')
+            ->toArray();
+
+        $headers = [
+            "Content-type" => "application/vnd.ms-excel",
+            "Content-Disposition" => "attachment; filename={$fileName}",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $callback = function () use ($client, $categories, $clientCategoryIds) {
+            echo '
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta http-equiv="Content-type" content="text/html;charset=utf-8" />
+            <style>
+                .header { background-color: #1e293b; color: #ffffff; font-weight: bold; border: 1px solid #000000; height: 35px; text-align: center; }
+                .client-name { background-color: #f1f5f9; font-weight: bold; font-size: 14px; border: 1px solid #000000; }
+                .si { color: #15803d; background-color: #dcfce7; text-align: center; font-weight: bold; border: 1px solid #000000; }
+                .no { color: #b91c1c; background-color: #fee2e2; text-align: center; font-weight: bold; border: 1px solid #000000; }
+                td { width: 160px; height: 30px; border: 0.5pt solid #cccccc; }
+            </style>
+        </head>
+        <body>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="2" class="client-name" style="height: 45px;">CLIENTE: ' . htmlspecialchars($client->cli_des) . ' (' . $client->co_cli . ')</th>
+                    </tr>
+                    <tr>
+                        <th class="header">CATEGORÍA</th>
+                        <th class="header">ESTADO</th>
+                    </tr>
+                </thead>
+                <tbody>';
+
+            foreach ($categories as $cat) {
+                $hasDoc = in_array($cat->id, $clientCategoryIds);
+                echo '<tr>';
+                echo '<td style="background-color: #f8fafc; font-weight: 500;">' . htmlspecialchars($cat->name) . '</td>';
+                if ($hasDoc) {
+                    echo '<td class="si">SÍ (Completado)</td>';
+                } else {
+                    echo '<td class="no">NO (Pendiente)</td>';
+                }
+                echo '</tr>';
+            }
+
+            echo '  </tbody>
+            </table>
+        </body>
+        </html>';
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

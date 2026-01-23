@@ -60,7 +60,22 @@ class DocumentController extends Controller
 
     public function create(Client $client): Response
     {
-        $categories = Category::orderBy('name')->get(['id', 'name']);
+        // 1. Buscamos las categorías y verificamos si existen documentos de ESTE cliente
+        $categories = Category::withExists([
+            'documents' => function ($query) use ($client) {
+                $query->where('client_id', $client->co_cli);
+            }
+        ])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($category) {
+                // 2. Damos formato a la respuesta para el Frontend
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'has_documents' => $category->documents_exists // True si tiene, False si no
+                ];
+            });
 
         return Inertia::render('documents/create', [
             'client' => $client,
@@ -203,4 +218,6 @@ class DocumentController extends Controller
 
         return response()->json($documents);
     }
+
+
 }

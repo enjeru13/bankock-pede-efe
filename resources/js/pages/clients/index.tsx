@@ -14,7 +14,7 @@ import clientsRoutes from '@/routes/clients';
 import type { BreadcrumbItem } from '@/types';
 import type { Client } from '@/types/client';
 import { Head, router } from '@inertiajs/react';
-import { Search } from 'lucide-react';
+import { Search, FileSpreadsheet } from 'lucide-react'; // <-- NUEVO: Icono de Excel
 import { useState } from 'react';
 
 interface PaginatedClients {
@@ -40,14 +40,8 @@ interface Props {
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard().url,
-    },
-    {
-        title: 'Clientes',
-        href: clientsRoutes.index().url,
-    },
+    { title: 'Dashboard', href: dashboard().url },
+    { title: 'Clientes', href: clientsRoutes.index().url },
 ];
 
 export default function ClientsIndex({ clients, filters }: Props) {
@@ -55,9 +49,6 @@ export default function ClientsIndex({ clients, filters }: Props) {
     const [status, setStatus] = useState(filters.status || 'all');
     const [fileStatus, setFileStatus] = useState(filters.file_status || 'all');
 
-    /**
-     * Aplicar filtros
-     */
     const handleFilter = () => {
         router.get(
             clientsRoutes.index().url,
@@ -66,16 +57,10 @@ export default function ClientsIndex({ clients, filters }: Props) {
                 status: status !== 'all' ? status : undefined,
                 file_status: fileStatus !== 'all' ? fileStatus : undefined,
             },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
+            { preserveState: true, preserveScroll: true },
         );
     };
 
-    /**
-     * Limpiar filtros
-     */
     const handleClearFilters = () => {
         setSearch('');
         setStatus('all');
@@ -83,13 +68,14 @@ export default function ClientsIndex({ clients, filters }: Props) {
         router.get(clientsRoutes.index().url);
     };
 
-    /**
-     * Manejar enter en búsqueda
-     */
     const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleFilter();
-        }
+        if (e.key === 'Enter') handleFilter();
+    };
+
+    // ✨ NUEVA FUNCIÓN PARA EXPORTAR ✨
+    const handleExportExcel = () => {
+        // Redirige al endpoint de Laravel que generará el Excel
+        window.location.href = '/clients/export-matrix';
     };
 
     return (
@@ -97,7 +83,7 @@ export default function ClientsIndex({ clients, filters }: Props) {
             <Head title="Clientes" />
 
             <div className="space-y-6">
-                {/* Header */}
+                {/* --- CABECERA CON EL BOTÓN DE EXPORTAR --- */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight">
@@ -107,11 +93,19 @@ export default function ClientsIndex({ clients, filters }: Props) {
                             Gestiona los clientes y sus documentos
                         </p>
                     </div>
+
+                    <Button
+                        onClick={handleExportExcel}
+                        variant="outline"
+                        className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 hover:text-green-800"
+                    >
+                        <FileSpreadsheet className="w-4 h-4 mr-2" />
+                        Exportar Excel de Documentos
+                    </Button>
                 </div>
 
                 {/* Filtros */}
                 <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 sm:flex-row">
-                    {/* Búsqueda */}
                     <div className="flex-1">
                         <div className="relative">
                             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -126,7 +120,6 @@ export default function ClientsIndex({ clients, filters }: Props) {
                         </div>
                     </div>
 
-                    {/* Filtro de estado */}
                     <Select value={status} onValueChange={setStatus}>
                         <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Estado" />
@@ -138,7 +131,6 @@ export default function ClientsIndex({ clients, filters }: Props) {
                         </SelectContent>
                     </Select>
 
-                    {/* Filtro de Archivos */}
                     <Select value={fileStatus} onValueChange={setFileStatus}>
                         <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Archivos" />
@@ -150,12 +142,9 @@ export default function ClientsIndex({ clients, filters }: Props) {
                         </SelectContent>
                     </Select>
 
-                    {/* Botones de acción */}
                     <div className="flex gap-2">
                         <Button onClick={handleFilter}>Filtrar</Button>
-                        <Button variant="outline" onClick={handleClearFilters}>
-                            Limpiar
-                        </Button>
+                        <Button variant="outline" onClick={handleClearFilters}>Limpiar</Button>
                     </div>
                 </div>
 
@@ -164,32 +153,20 @@ export default function ClientsIndex({ clients, filters }: Props) {
                     <>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {clients.data.map((client) => (
-                                <ClientCard
-                                    key={client.co_cli}
-                                    client={client}
-                                />
+                                <ClientCard key={client.co_cli} client={client} />
                             ))}
                         </div>
 
-                        {/* Paginación */}
                         {clients.last_page > 1 && (
                             <div className="flex items-center justify-center gap-2">
                                 {clients.links.map((link, index) => (
                                     <Button
                                         key={index}
-                                        variant={
-                                            link.active ? 'default' : 'outline'
-                                        }
+                                        variant={link.active ? 'default' : 'outline'}
                                         size="sm"
                                         disabled={!link.url}
-                                        onClick={() => {
-                                            if (link.url) {
-                                                router.visit(link.url);
-                                            }
-                                        }}
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
+                                        onClick={() => link.url && router.visit(link.url)}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
                                 ))}
                             </div>
@@ -200,25 +177,12 @@ export default function ClientsIndex({ clients, filters }: Props) {
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                             <Search className="h-6 w-6 text-muted-foreground" />
                         </div>
-                        <h3 className="mt-4 text-lg font-semibold">
-                            No se encontraron clientes
-                        </h3>
+                        <h3 className="mt-4 text-lg font-semibold">No se encontraron clientes</h3>
                         <p className="mt-2 text-sm text-muted-foreground">
                             {filters.search || filters.status
                                 ? 'Intenta ajustar los filtros de búsqueda'
                                 : 'Comienza creando tu primer cliente'}
                         </p>
-                        {/* {!filters.search && !filters.status && (
-                            // <Link
-                            //     href={clientsRoutes.create().url}
-                            //     className="mt-4"
-                            // >
-                            //     <Button>
-                            //         <Plus className="mr-2 h-4 w-4" />
-                            //         Crear Cliente
-                            //     </Button>
-                            // </Link>
-                        )} */}
                     </div>
                 )}
             </div>

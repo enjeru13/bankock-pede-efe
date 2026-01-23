@@ -44,6 +44,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
     Route::get('clients', [ClientController::class, 'index'])
         ->name('clients.index');
+    Route::get('clients/export-matrix', [ClientController::class, 'exportMatrix'])->name('clients.export-matrix');
+    // Ruta para el excel individual de un cliente
+    Route::get('/clients/{client}/export-matrix', [ClientController::class, 'exportClientMatrix'])->name('clients.export-individual-matrix');
     Route::get('clients/{client}', [ClientController::class, 'show'])
         ->name('clients.show');
 
