@@ -226,7 +226,7 @@ export default function ClientsShow({ client, stats, categories }: Props) {
                             <Button
                                 onClick={handleExportClientExcel}
                                 variant="outline"
-                                className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                                className="bg-green-50 text-green-700 border-green-200 hover:bg-green-200 hover:text-green-800"
                             >
                                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                                 Exportar Excel de Documentos

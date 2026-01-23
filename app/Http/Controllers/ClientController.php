@@ -150,34 +150,41 @@ class ClientController extends Controller
 
     public function exportMatrix(): StreamedResponse
     {
-        $fileName = 'matriz_clientes_' . date('Y_m_d_H_i') . '.xls'; // Cambiamos a .xls para mejor compatibilidad con estilos
+        $user = auth()->user();
+        $fileName = 'matriz_clientes_' . date('Y_m_d_H_i') . '.xls';
 
         $categories = Category::orderBy('name')->get();
-        $clients = Client::active()->orderBy('cli_des')->get();
 
+        // 🛡️ SEGURIDAD: Aplicamos el scope accessibleBy para que solo traiga 
+        // los clientes que el usuario tiene permitido ver según su segmento.
+        $clientsQuery = Client::active()->accessibleBy($user);
+
+        // Si no es admin, la consulta ya viene filtrada por su segmento automáticamente
+        $clients = $clientsQuery->orderBy('cli_des')->get();
+
+        // Obtenemos la matriz de documentos filtrada también por esos clientes accesibles
         $documentMatrix = DB::table('documents')
+            ->whereIn('client_id', $clients->pluck('co_cli')) // Solo documentos de mis clientes
             ->select('client_id', 'category_id')
             ->groupBy('client_id', 'category_id')
             ->get()
             ->groupBy('client_id');
 
         $headers = [
-            "Content-type" => "application/vnd.ms-excel", // Cambiado para que Excel tome el control
+            "Content-type" => "application/vnd.ms-excel",
             "Content-Disposition" => "attachment; filename={$fileName}",
             "Pragma" => "no-cache",
             "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
             "Expires" => "0"
         ];
 
-        $callback = function () use ($clients, $categories, $documentMatrix) {
-            $file = fopen('php://output', 'w');
-
-            // Empezamos a escribir la estructura HTML/Excel con estilos CSS
+        $callback = function () use ($clients, $categories, $documentMatrix, $user) {
             echo '
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
         <head>
             <meta http-equiv="Content-type" content="text/html;charset=utf-8" />
             <style>
+                .header-top { background-color: #0f172a; color: #ffffff; font-size: 16px; font-weight: bold; }
                 .header { background-color: #1e293b; color: #ffffff; font-weight: bold; border: 1px solid #000000; height: 35px; }
                 .client-info { background-color: #f8fafc; font-weight: bold; border: 1px solid #000000; }
                 .si { color: #15803d; background-color: #dcfce7; text-align: center; font-weight: bold; border: 1px solid #000000; }
@@ -188,6 +195,11 @@ class ClientController extends Controller
         <body>
             <table>
                 <thead>
+                    <tr>
+                        <th colspan="' . ($categories->count() + 2) . '" class="header-top">
+                            REPORTE DE MATRIZ - USUARIO: ' . strtoupper($user->name) . '
+                        </th>
+                    </tr>
                     <tr>
                         <th class="header">Código</th>
                         <th class="header" style="width: 350px;">Nombre del Cliente</th>';
@@ -222,8 +234,6 @@ class ClientController extends Controller
             </table>
         </body>
         </html>';
-
-            fclose($file);
         };
 
         return response()->stream($callback, 200, $headers);
@@ -231,6 +241,9 @@ class ClientController extends Controller
 
     public function exportClientMatrix(Client $client): StreamedResponse
     {
+        if (!auth()->user()->is_admin && auth()->user()->co_seg !== $client->co_seg) {
+            abort(403, 'No tienes permiso para ver este cliente.');
+        }
         // Nombre del archivo personalizado con el nombre del cliente
         $safeName = str_replace(' ', '_', $client->cli_des);
         $fileName = "matriz_{$client->co_cli}_{$safeName}_" . date('Y_m_d') . ".xls";
