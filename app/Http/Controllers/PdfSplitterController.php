@@ -34,7 +34,7 @@ class PdfSplitterController extends Controller
     {
         // Validación estándar de Laravel para un archivo
         $request->validate([
-            'pdf' => 'required|file|mimes:pdf|max:20480', // Max 20MB por cada archivo individual
+            'pdf' => 'required|file|mimes:pdf',
             'client_id' => 'required|string',
             'title' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',

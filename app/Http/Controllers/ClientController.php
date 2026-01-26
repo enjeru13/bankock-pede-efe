@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -8,7 +9,6 @@ use App\Models\Client;
 use App\Models\Document;
 use Inertia\Inertia;
 use Inertia\Response;
-
 
 class ClientController extends Controller
 {
@@ -40,6 +40,7 @@ class ClientController extends Controller
             $query->whereNotIn('co_cli', $clientIdsWithFiles);
         }
 
+        // La vista principal sí mantiene su seguridad: solo ven los clientes de su zona
         $query->accessibleBy(auth()->user());
 
         $clients = $query->paginate(15)->withQueryString();
@@ -51,12 +52,6 @@ class ClientController extends Controller
             ->selectRaw('client_id, count(*) as count')
             ->groupBy('client_id')
             ->pluck('count', 'client_id');
-
-        // Calculate Category Counts (Distinct categories per client)
-        // $categoryCounts = Document::whereIn('client_id', $clientIds)
-        //     ->selectRaw('client_id, count(distinct category_id) as count')
-        //     ->groupBy('client_id')
-        //     ->pluck('count', 'client_id');
 
         // Mandatory Categories Logic
         $mandatoryCategoryNames = [
@@ -123,14 +118,11 @@ class ClientController extends Controller
                 ->values(),
         ];
 
-        // $activeClients = Client::active()
-        //     ->orderBy('cli_des')
-        //     ->get(['co_cli', 'cli_des', 'co_seg', 'co_ven']);
         $allCategories = Category::orderBy('name')->get(['id', 'name']);
+
         return Inertia::render('clients/show', [
             'client' => $client->setRelation('documents', $documents),
             'stats' => $stats,
-            // 'clients' => $activeClients,
             'categories' => $allCategories,
         ]);
     }
@@ -155,16 +147,13 @@ class ClientController extends Controller
 
         $categories = Category::orderBy('name')->get();
 
-        // 🛡️ SEGURIDAD: Aplicamos el scope accessibleBy para que solo traiga 
-        // los clientes que el usuario tiene permitido ver según su segmento.
+        // 🛡️ SEGURIDAD GENERAL MANTENIDA: Al descargar todo, solo descarga lo de su zona
         $clientsQuery = Client::active()->accessibleBy($user);
 
-        // Si no es admin, la consulta ya viene filtrada por su segmento automáticamente
         $clients = $clientsQuery->orderBy('cli_des')->get();
 
-        // Obtenemos la matriz de documentos filtrada también por esos clientes accesibles
         $documentMatrix = DB::table('documents')
-            ->whereIn('client_id', $clients->pluck('co_cli')) // Solo documentos de mis clientes
+            ->whereIn('client_id', $clients->pluck('co_cli'))
             ->select('client_id', 'category_id')
             ->groupBy('client_id', 'category_id')
             ->get()
@@ -239,11 +228,11 @@ class ClientController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function exportClientMatrix(Client $client): StreamedResponse
+    public function exportClientMatrix(Client $client)
     {
-        if (!auth()->user()->is_admin && auth()->user()->co_seg !== $client->co_seg) {
-            abort(403, 'No tienes permiso para ver este cliente.');
-        }
+        // 🚀 SE ELIMINÓ LA VALIDACIÓN DE SEGURIDAD AQUÍ
+        // Ahora cualquier usuario puede descargar el Excel si llega a esta URL
+
         // Nombre del archivo personalizado con el nombre del cliente
         $safeName = str_replace(' ', '_', $client->cli_des);
         $fileName = "matriz_{$client->co_cli}_{$safeName}_" . date('Y_m_d') . ".xls";
@@ -257,16 +246,8 @@ class ClientController extends Controller
             ->pluck('category_id')
             ->toArray();
 
-        $headers = [
-            "Content-type" => "application/vnd.ms-excel",
-            "Content-Disposition" => "attachment; filename={$fileName}",
-            "Pragma" => "no-cache",
-            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
-            "Expires" => "0"
-        ];
-
-        $callback = function () use ($client, $categories, $clientCategoryIds) {
-            echo '
+        // Generar el contenido HTML
+        $html = '
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
         <head>
             <meta http-equiv="Content-type" content="text/html;charset=utf-8" />
@@ -291,24 +272,29 @@ class ClientController extends Controller
                 </thead>
                 <tbody>';
 
-            foreach ($categories as $cat) {
-                $hasDoc = in_array($cat->id, $clientCategoryIds);
-                echo '<tr>';
-                echo '<td style="background-color: #f8fafc; font-weight: 500;">' . htmlspecialchars($cat->name) . '</td>';
-                if ($hasDoc) {
-                    echo '<td class="si">SÍ (Completado)</td>';
-                } else {
-                    echo '<td class="no">NO (Pendiente)</td>';
-                }
-                echo '</tr>';
+        foreach ($categories as $cat) {
+            $hasDoc = in_array($cat->id, $clientCategoryIds);
+            $html .= '<tr>';
+            $html .= '<td style="background-color: #f8fafc; font-weight: 500;">' . htmlspecialchars($cat->name) . '</td>';
+            if ($hasDoc) {
+                $html .= '<td class="si">SÍ (Completado)</td>';
+            } else {
+                $html .= '<td class="no">NO (Pendiente)</td>';
             }
+            $html .= '</tr>';
+        }
 
-            echo '  </tbody>
+        $html .= '
+                </tbody>
             </table>
         </body>
         </html>';
-        };
 
-        return response()->stream($callback, 200, $headers);
+        return response($html, 200)
+            ->header('Content-Type', 'application/vnd.ms-excel; charset=utf-8')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+            ->header('Pragma', 'no-cache')
+            ->header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0')
+            ->header('Expires', '0');
     }
 }

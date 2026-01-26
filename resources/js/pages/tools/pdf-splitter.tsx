@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,9 +9,11 @@ import type { BreadcrumbItem } from '@/types';
 import type { Client } from '@/types/client';
 import { Head } from '@inertiajs/react';
 import {
-    Trash2, Scissors, CheckSquare, XSquare, FileUp, RefreshCcw,
-    CheckCircle2, MousePointerClick, LayoutTemplate, UserCheck, Files, FilePlus2,
-    Check, ChevronsUpDown, ZoomIn, Eye, ArrowRight, BookOpenCheck, Settings2
+    Trash2, Scissors, FileUp,
+    CheckCircle2, MousePointerClick, LayoutTemplate, FilePlus2,
+    Check, ChevronsUpDown, ArrowRight, BookOpenCheck, Settings2,
+    Files,
+    Eye
 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
