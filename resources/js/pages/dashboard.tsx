@@ -115,7 +115,7 @@ export default function Dashboard({
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-500">
                                 <AlertCircle className="h-5 w-5" />
-                                Clientes sin Archivos Subi2
+                                Clientes sin Archivos Subidos
                             </CardTitle>
                             <CardDescription>
                                 {/* Lógica dinámica para el texto descriptivo */}
